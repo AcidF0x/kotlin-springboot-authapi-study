@@ -1,0 +1,31 @@
+version: '3.4'
+
+services:
+  mysql:
+    image: mysql/mysql-server:8.0.23
+    restart: always
+    privileged: true
+    ports:
+      - "33060:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: dev_db
+      MYSQL_USER: dev
+      MYSQL_PASSWORD: password
+    volumes:
+      - "database:/var/lib/mysql:rw"
+      - "./docker/config/mysql:/docker-entrypoint-initdb.d:ro"
+  serivce:
+    image: openjdk:8
+    restart: always
+    depends_on:
+      - database
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./:/code"
+    working_dir: /code
+    command: sh -c "java -jar ./build/libs/kopring-boot-auth-api-0.0.1-SNAPSHOT.jar  --spring.profiles.active=docker"
+
+volumes:
+  database:

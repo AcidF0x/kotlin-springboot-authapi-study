@@ -1,0 +1,3 @@
+CREATE DATABASE IF NOT EXISTS `dev_db`;
+CREATE USER IF NOT EXISTS 'dev'@'%' IDENTIFIED BY 'password';
+GRANT ALL ON *.* TO 'dev'@'%';
