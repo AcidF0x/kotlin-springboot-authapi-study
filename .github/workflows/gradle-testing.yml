@@ -1,0 +1,27 @@
+name: gradle-testing
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Java JDK
+      uses: actions/setup-java@v2.1.0
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+    - name: Check JAVA Version
+      run: javac -version
+    - name: Add Permission
+      run: chmod +x gradlew
+    - name: Run Testing
+      run: ./gradlew test
