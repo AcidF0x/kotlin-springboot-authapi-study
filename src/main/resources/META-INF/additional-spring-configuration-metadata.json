@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "config.healthcheck-message",
+      "type": "java.lang.String",
+      "description": "health check 페이지 표시 메시지."
+    }
+  ]
+}
