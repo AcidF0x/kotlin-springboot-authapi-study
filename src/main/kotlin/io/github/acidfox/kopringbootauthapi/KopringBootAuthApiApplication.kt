@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class KopringBootAuthApiApplication
 
 fun main(args: Array<String>) {
-	runApplication<KopringBootAuthApiApplication>(*args)
+    runApplication<KopringBootAuthApiApplication>(*args)
 }
