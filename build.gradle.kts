@@ -5,6 +5,8 @@ plugins {
     id("io.spring.dependency-management") version "1.0.12.RELEASE"
     id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
     id("org.jlleitschuh.gradle.ktlint-idea") version "10.3.0"
+    id("org.jetbrains.kotlin.plugin.jpa") version "1.6.21"
+    id("org.jetbrains.kotlin.plugin.allopen") version "1.6.21"
     kotlin("jvm") version "1.6.21"
     kotlin("plugin.spring") version "1.6.21"
 }
@@ -29,13 +31,16 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-mysql")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("mysql:mysql-connector-java:8.0.28")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("com.h2database:h2:2.1.210")
 }
 
 tasks.withType<KotlinCompile> {
@@ -51,4 +56,10 @@ tasks.withType<Test> {
 
 tasks.test {
     outputs.dir(snippetsDir)
+}
+
+allOpen {
+    annotation("javax.persistence.Entity")
+    annotation("javax.persistence.MappedSuperclass")
+    annotation("javax.persistence.Embeddable")
 }
