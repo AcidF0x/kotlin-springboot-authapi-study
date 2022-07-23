@@ -4,4 +4,4 @@ import io.github.acidfox.kopringbootauthapi.infrastructure.external.sms.driver.S
 import org.springframework.stereotype.Component
 
 @Component
-class SMSClient(private val driver: SMSSendable): SMSSendable by driver
+class SMSClient(private val driver: SMSSendable) : SMSSendable by driver
