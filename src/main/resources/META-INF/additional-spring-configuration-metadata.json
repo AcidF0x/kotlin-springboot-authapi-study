@@ -4,6 +4,11 @@
       "name": "config.healthcheck-message",
       "type": "java.lang.String",
       "description": "health check 페이지 표시 메시지."
+    },
+    {
+      "name": "config.auth.auth-code-issue-rate-limit-per-day",
+      "type": "java.lang.Integer",
+      "description": "인증코드 타입별 1일당 발급 제한 카운트."
     }
   ]
 }
