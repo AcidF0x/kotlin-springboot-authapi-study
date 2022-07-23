@@ -9,3 +9,11 @@ config:
 spring:
   flyway:
     enabled: false
+
+server:
+  error:
+    include-exception: false
+    include-message: never
+    include-stacktrace: never
+    whitelabel:
+      enabled: false
