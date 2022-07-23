@@ -15,8 +15,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
-internal class AuthCodeDomainServiceTest(): BaseTestCase()
-{
+internal class AuthCodeDomainServiceTest() : BaseTestCase() {
     @MockK
     lateinit var authCodeRepository: AuthCodeRepository
 
@@ -33,8 +32,7 @@ internal class AuthCodeDomainServiceTest(): BaseTestCase()
 
     @Test
     @DisplayName("인증코드 발급 기록이 없는 경우 인증 코드를 발급 할 수 있다")
-    fun testIssue()
-    {
+    fun testIssue() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
@@ -66,12 +64,11 @@ internal class AuthCodeDomainServiceTest(): BaseTestCase()
 
     @Test
     @DisplayName("인증코드 발급 기록이 있더라도 일일 발송 제한량을 넘지 않으면 발급 할 수있다 ")
-    fun testIssueWhenAlreadyIssued()
-    {
+    fun testIssueWhenAlreadyIssued() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
-        val preSendCount = authCodeDomainService.issueLimitPerDay - 1;
+        val preSendCount = authCodeDomainService.issueLimitPerDay - 1
         val authCode = AuthCode(
             phoneNumber,
             authCodeType,
@@ -106,8 +103,7 @@ internal class AuthCodeDomainServiceTest(): BaseTestCase()
 
     @Test
     @DisplayName("인증코드 일일 발송 제한량을 넘은 발급 기록이 있더라도 다음날이면 발급 할수있다")
-    fun testIssueWhenAlreadyLimitedButNotSameDay()
-    {
+    fun testIssueWhenAlreadyLimitedButNotSameDay() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
@@ -131,7 +127,6 @@ internal class AuthCodeDomainServiceTest(): BaseTestCase()
             )
         } returns authCode
 
-
         // When
         val result = authCodeDomainService.issue(phoneNumber, authCodeType)
 
@@ -145,8 +140,7 @@ internal class AuthCodeDomainServiceTest(): BaseTestCase()
     }
     @Test
     @DisplayName("인증코드 일일 발송 제한량을 넘은 발급 기록이 있더라도 인증이 완료된 기록이면 발급 가능하다")
-    fun testIssueWhenAlreadyLimitedButVerified()
-    {
+    fun testIssueWhenAlreadyLimitedButVerified() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
@@ -172,7 +166,6 @@ internal class AuthCodeDomainServiceTest(): BaseTestCase()
             )
         } returns authCode
 
-
         // When
         val result = authCodeDomainService.issue(phoneNumber, authCodeType)
 
@@ -187,8 +180,7 @@ internal class AuthCodeDomainServiceTest(): BaseTestCase()
 
     @Test
     @DisplayName("인증코드 일일 발송 제한량을 넘은 경우 발급하지 않는다")
-    fun testIssueWhenAlreadyLimited()
-    {
+    fun testIssueWhenAlreadyLimited() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
@@ -202,10 +194,8 @@ internal class AuthCodeDomainServiceTest(): BaseTestCase()
 
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
-
         // When && Then
-        Assertions.assertThrows(TooManyAuthCodeRequestException::class.java)
-        {
+        Assertions.assertThrows(TooManyAuthCodeRequestException::class.java) {
             authCodeDomainService.issue(phoneNumber, authCodeType)
         }
     }
