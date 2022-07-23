@@ -1,2 +1,6 @@
 config:
   healthcheck-message: "[]"
+
+spring:
+  flyway:
+    enabled: false

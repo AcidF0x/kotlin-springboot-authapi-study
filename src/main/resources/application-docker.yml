@@ -1,4 +1,26 @@
 spring:
+  sql:
+    init:
+      encoding: UTF-8
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: true
   config:
     activate:
       on-profile: docker
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-test-query: SELECT 1
+      minimum-idle: 50
+      maximum-pool-size: 100
+      pool-name: SpringBootHikariCP
+    url: jdbc:mysql://mysql:3306/dev_db?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    username: dev
+    password: password
+  flyway:
+    enabled: true
+    baseline-on-migrate: true

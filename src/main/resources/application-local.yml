@@ -1,4 +1,29 @@
+config:
+  healthcheck-message: "[]"
+
 spring:
+  sql:
+    init:
+      encoding: UTF-8
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: true
+  flyway:
+    enabled: false
+    baseline-on-migrate: true
   config:
     activate:
       on-profile: local
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-test-query: SELECT 1
+      minimum-idle: 50
+      maximum-pool-size: 100
+      pool-name: SpringBootHikariCP
+    url: jdbc:mysql://[Mysql HOST]:3306/[Database Name]?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    username: [Mysql User]
+    password: [Mysql Password]
