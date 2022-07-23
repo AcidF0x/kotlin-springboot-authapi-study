@@ -1,5 +1,7 @@
 config:
   healthcheck-message: "[]"
+  auth:
+    auth-code-issue-limit-per-day: 10
 
 spring:
   flyway:
