@@ -4,7 +4,7 @@ import io.github.acidfox.kopringbootauthapi.domain.smsmessage.dto.SMSMessageDto
 import java.io.File
 import java.time.LocalDateTime
 
-class FileDriver: SMSSendable {
+class FileDriver : SMSSendable {
     companion object {
         const val FILE_NAME = "sms_output.txt"
     }
@@ -17,6 +17,7 @@ class FileDriver: SMSSendable {
             Subject : ${message.subject}
             body: ${message.body}
             ==============================================================
+
         """.trimIndent()
 
         try {
