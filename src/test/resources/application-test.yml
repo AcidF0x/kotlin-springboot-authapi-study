@@ -2,6 +2,7 @@ config:
   healthcheck-message: "[]"
   auth:
     auth-code-issue-limit-per-day: 10
+    auth-code-time-to-live-minute: 3
 
 spring:
   config:

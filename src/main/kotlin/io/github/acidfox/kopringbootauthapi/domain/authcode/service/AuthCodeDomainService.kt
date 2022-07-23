@@ -6,6 +6,7 @@ import io.github.acidfox.kopringbootauthapi.domain.authcode.model.AuthCode
 import io.github.acidfox.kopringbootauthapi.domain.authcode.repository.AuthCodeRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.time.Duration
 import java.time.LocalDateTime
 import kotlin.random.Random
 
@@ -15,6 +16,8 @@ class AuthCodeDomainService(
 ) {
     @Value("\${config.auth.auth-code-issue-limit-per-day}")
     var issueLimitPerDay: Int = 10
+    @Value("\${config.auth.auth-code-time-to-live-minute}")
+    var authCodeTTL: Int = 3
 
     fun issue(phoneNumber: String, authCodeType: AuthCodeType): AuthCode {
         val now: LocalDateTime = LocalDateTime.now()
@@ -38,5 +41,23 @@ class AuthCodeDomainService(
         authCode.verifiedAt = null
 
         return authCodeRepository.save(authCode)
+    }
+
+    fun validate(phoneNumber: String, authCodeType: AuthCodeType, code: String): Boolean {
+        val now: LocalDateTime = LocalDateTime.now()
+
+        val authCode = authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType)
+        if (Duration.between(authCode!!.requestedAt, now).toMinutes() >= authCodeTTL) {
+            return false
+        }
+
+        if (authCode.code !== code) {
+            return false
+        }
+
+        authCode.verifiedAt = LocalDateTime.now()
+        authCodeRepository.save(authCode)
+
+        return true
     }
 }

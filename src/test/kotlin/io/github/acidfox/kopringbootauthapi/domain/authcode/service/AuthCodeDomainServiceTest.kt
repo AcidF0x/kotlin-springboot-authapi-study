@@ -5,10 +5,12 @@ import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.TooManyAuthCodeRequestException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.model.AuthCode
 import io.github.acidfox.kopringbootauthapi.domain.authcode.repository.AuthCodeRepository
+import io.mockk.Called
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockkStatic
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -195,8 +197,92 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When && Then
+        verify { authCodeRepository.save(authCode) wasNot Called }
         Assertions.assertThrows(TooManyAuthCodeRequestException::class.java) {
             authCodeDomainService.issue(phoneNumber, authCodeType)
         }
+    }
+
+    @Test
+    @DisplayName("인증 코드를 검증 - 발급 받은 코드와 일치하고 유효 기간 내의 경우 true를 리턴한다")
+    fun testValidate() {
+        // Given
+        val expectedCode = "111222"
+        val phoneNumber = "01011112222"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+        val authCode = AuthCode(
+            phoneNumber,
+            authCodeType,
+            expectedCode,
+            authCodeDomainService.issueLimitPerDay,
+            now
+        )
+
+        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
+        every {
+            authCodeRepository.save(
+                match {
+                    it.phoneNumber == phoneNumber &&
+                        it.authCodeType === authCodeType &&
+                        it.verifiedAt!!.isEqual(now)
+                }
+            )
+        } returns authCode
+
+        // When
+        val result = authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
+
+        // Then
+        Assertions.assertTrue(result)
+    }
+
+    @Test
+    @DisplayName("인증 코드를 검증 - 발급 받은 코드와 일치하지 않는 경우 false를 리턴한다")
+    fun testValidateWhenInvalidCode() {
+        // Given
+        val expectedCode = "111222"
+        val phoneNumber = "01011112222"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+        val authCode = AuthCode(
+            phoneNumber,
+            authCodeType,
+            expectedCode,
+            authCodeDomainService.issueLimitPerDay,
+            now
+        )
+
+        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
+
+        // When
+        val result = authCodeDomainService.validate(phoneNumber, authCodeType, "000000")
+
+        // Then
+        verify { authCodeRepository.save(authCode) wasNot Called }
+        Assertions.assertFalse(result)
+    }
+
+    @Test
+    @DisplayName("인증 코드를 검증 - 코드의 일치 여부와 상관 없이 유효 기간이 지난 경우 false를 리턴한다")
+    fun testValidateWhenExpired() {
+        // Given
+        val expectedCode = "111222"
+        val phoneNumber = "01011112222"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+        val authCode = AuthCode(
+            phoneNumber,
+            authCodeType,
+            expectedCode,
+            authCodeDomainService.issueLimitPerDay,
+            now.minusMinutes(authCodeDomainService.authCodeTTL.toLong())
+        )
+
+        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
+
+        // When
+        val result = authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
+
+        // Then
+        verify { authCodeRepository.save(authCode) wasNot Called }
+        Assertions.assertFalse(result)
     }
 }
