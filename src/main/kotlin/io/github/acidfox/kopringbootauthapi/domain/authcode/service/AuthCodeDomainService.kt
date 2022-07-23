@@ -30,7 +30,7 @@ class AuthCodeDomainService(
 
         if (now.toLocalDate().isEqual(authCode.requestedAt.toLocalDate())) {
             if (authCode.sendCount >= issueLimitPerDay && authCode.verifiedAt === null) {
-                throw TooManyAuthCodeRequestException()
+                throw TooManyAuthCodeRequestException("일일 요청 제한을 초과하였습니다")
             }
             authCode.sendCount = if (authCode.verifiedAt === null) authCode.sendCount + 1 else 1
         } else {
