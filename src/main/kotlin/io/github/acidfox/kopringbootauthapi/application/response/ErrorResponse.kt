@@ -1,4 +1,4 @@
-package io.github.acidfox.kopringbootauthapi.infrastructure.error
+package io.github.acidfox.kopringbootauthapi.application.response
 
 data class ErrorResponse(
     val code: Int,
