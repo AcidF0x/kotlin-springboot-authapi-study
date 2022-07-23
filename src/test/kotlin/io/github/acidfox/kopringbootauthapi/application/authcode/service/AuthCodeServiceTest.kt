@@ -44,17 +44,18 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
 
         // Then
         verify(exactly = 1) { authCodeDomainService.issue(phoneNumber, authCodeType) }
-        verify(exactly = 1) { smsMessageFactory.get(
-            SMSMessageType.SIGN_UP_REQUEST_AUTH_CODE,
-            phoneNumber,
-            match { it["code"] == mockAuthCode.code &&  it["ttl"] == mockAuthCodeTTL.toString() }
-        ) }
+        verify(exactly = 1) {
+            smsMessageFactory.get(
+                SMSMessageType.SIGN_UP_REQUEST_AUTH_CODE,
+                phoneNumber,
+                match { it["code"] == mockAuthCode.code && it["ttl"] == mockAuthCodeTTL.toString() }
+            )
+        }
         verify(exactly = 1) { smsClient.sendMessage(mockMessageDto) }
     }
 
     @Test
-    fun testValidate()
-    {
+    fun testValidate() {
         // Given
         val phoneNumber = "01012341234"
         val authCodeType = AuthCodeType.SIGN_UP
