@@ -14,6 +14,11 @@
       "name": "config.auth.auth-code-time-to-live-minute",
       "type": "java.lang.Integer",
       "description": "인증 코드 유효 시간 (분)."
+    },
+    {
+      "name": "config.sms.driver",
+      "type": "java.lang.String",
+      "description": "SMS 전송시 사용할 드라이버"
     }
   ]
 }
