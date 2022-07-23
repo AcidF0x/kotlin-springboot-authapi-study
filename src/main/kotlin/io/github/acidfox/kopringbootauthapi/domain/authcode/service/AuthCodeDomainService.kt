@@ -15,6 +15,8 @@ class AuthCodeDomainService(
 ) {
     @Value("\${config.auth.auth-code-issue-limit-per-day}")
     var issueLimitPerDay: Int = 10
+    @Value("\${config.auth-code-time-to-live-minute}")
+    var authCodeTTL: Int = 3
 
     fun issue(phoneNumber: String, authCodeType: AuthCodeType): AuthCode {
         val now: LocalDateTime = LocalDateTime.now()

@@ -9,6 +9,11 @@
       "name": "config.auth.auth-code-issue-rate-limit-per-day",
       "type": "java.lang.Integer",
       "description": "인증코드 타입별 1일당 발급 제한 카운트."
+    },
+    {
+      "name": "config.auth.auth-code-time-to-live-minute",
+      "type": "java.lang.Integer",
+      "description": "인증 코드 유효 시간 (분)."
     }
   ]
 }
