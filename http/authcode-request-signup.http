@@ -1,0 +1,6 @@
+POST http://localhost:8080/api/auth/auth-code/signup
+Content-Type: application/json
+
+{
+  "phoneNumber": "01012341234"
+}
