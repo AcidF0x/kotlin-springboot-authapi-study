@@ -1,4 +1,4 @@
-package io.github.acidfox.kopringbootauthapi.application.authcode.service
+package io.github.acidfox.kopringbootauthapi.application.service
 
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDomainService
