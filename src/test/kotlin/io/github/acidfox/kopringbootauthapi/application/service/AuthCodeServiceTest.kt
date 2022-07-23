@@ -1,7 +1,6 @@
 package io.github.acidfox.kopringbootauthapi.application.service
 
 import io.github.acidfox.kopringbootauthapi.BaseTestCase
-import io.github.acidfox.kopringbootauthapi.application.service.AuthCodeService
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.domain.authcode.model.AuthCode
 import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDomainService
