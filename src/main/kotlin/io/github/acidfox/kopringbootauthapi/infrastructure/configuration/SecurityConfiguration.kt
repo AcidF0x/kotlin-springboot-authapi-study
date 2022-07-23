@@ -1,4 +1,4 @@
-package io.github.acidfox.kopringbootauthapi.infrastructure
+package io.github.acidfox.kopringbootauthapi.infrastructure.configuration
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

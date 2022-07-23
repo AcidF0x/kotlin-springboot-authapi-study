@@ -3,6 +3,8 @@ config:
   auth:
     auth-code-issue-limit-per-day: 10
     auth-code-time-to-live-minute: 3
+  sms:
+    driver: file
 
 spring:
   config:
