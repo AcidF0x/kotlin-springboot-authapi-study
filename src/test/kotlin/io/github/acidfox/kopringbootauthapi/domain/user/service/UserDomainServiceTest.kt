@@ -98,9 +98,13 @@ internal class UserDomainServiceTest : BaseTestCase() {
         } returns true
 
         // When && Then
-        Assertions.assertThrows(CannotSignupException::class.java) {
-            userDomainService.signUp(requestDto)
-        }
+        Assertions.assertThrows(
+            CannotSignupException::class.java,
+            {
+                userDomainService.signUp(requestDto)
+            },
+            "이미 가입된 유저 입니다."
+        )
         verify { userRepository.save(allAny()) wasNot called }
     }
 }

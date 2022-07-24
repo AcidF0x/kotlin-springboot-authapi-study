@@ -200,9 +200,13 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When && Then
-        Assertions.assertThrows(TooManyAuthCodeRequestException::class.java) {
-            authCodeDomainService.issue(phoneNumber, authCodeType)
-        }
+        Assertions.assertThrows(
+            TooManyAuthCodeRequestException::class.java,
+            {
+                authCodeDomainService.issue(phoneNumber, authCodeType)
+            },
+            "일일 요청 제한을 초과하였습니다"
+        )
         verify { authCodeRepository.save(authCode) wasNot Called }
     }
 
@@ -277,9 +281,13 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When && Then
-        Assertions.assertThrows(InvalidAuthCodeException::class.java) {
-            authCodeDomainService.validate(phoneNumber, authCodeType, "000000")
-        }
+        Assertions.assertThrows(
+            InvalidAuthCodeException::class.java,
+            {
+                authCodeDomainService.validate(phoneNumber, authCodeType, "000000")
+            },
+            "유효하지 않은 인증 코드입니다"
+        )
         verify { authCodeRepository.save(authCode) wasNot Called }
     }
 
@@ -301,9 +309,13 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When && Then
-        Assertions.assertThrows(InvalidAuthCodeException::class.java) {
-            authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
-        }
+        Assertions.assertThrows(
+            InvalidAuthCodeException::class.java,
+            {
+                authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
+            },
+            "유효하지 않은 인증 코드입니다"
+        )
         verify { authCodeRepository.save(authCode) wasNot Called }
     }
 
@@ -327,9 +339,13 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When && Then
-        Assertions.assertThrows(InvalidAuthCodeException::class.java) {
-            authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
-        }
+        Assertions.assertThrows(
+            InvalidAuthCodeException::class.java,
+            {
+                authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
+            },
+            "유효하지 않은 인증 코드입니다"
+        )
         verify { authCodeRepository.save(authCode) wasNot Called }
     }
 
@@ -375,9 +391,13 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When
-        Assertions.assertThrows(NotValidatedAuthCodeException::class.java) {
-            authCodeDomainService.verifyValidation(phoneNumber, authCodeType)
-        }
+        Assertions.assertThrows(
+            NotValidatedAuthCodeException::class.java,
+            {
+                authCodeDomainService.verifyValidation(phoneNumber, authCodeType)
+            },
+            "먼저 휴대전화 번호를 인증 해주세요"
+        )
     }
 
     @Test
@@ -390,9 +410,13 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns null
 
         // When
-        Assertions.assertThrows(NotValidatedAuthCodeException::class.java) {
-            authCodeDomainService.verifyValidation(phoneNumber, authCodeType)
-        }
+        Assertions.assertThrows(
+            NotValidatedAuthCodeException::class.java,
+            {
+                authCodeDomainService.verifyValidation(phoneNumber, authCodeType)
+            },
+            "먼저 휴대전화 번호를 인증 해주세요"
+        )
         verify { authCodeRepository.save(allAny()) wasNot called }
     }
 
@@ -415,8 +439,12 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When
-        Assertions.assertThrows(NotValidatedAuthCodeException::class.java) {
-            authCodeDomainService.verifyValidation(phoneNumber, authCodeType)
-        }
+        Assertions.assertThrows(
+            NotValidatedAuthCodeException::class.java,
+            {
+                authCodeDomainService.verifyValidation(phoneNumber, authCodeType)
+            },
+            "휴대전화 번호 인증이 만료되었습니다. 다시 인증 해주세요"
+        )
     }
 }
