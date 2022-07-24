@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-internal class AuthCodeControllerTest : BaseControllerTestCase() {
+internal class AuthControllerTest : BaseControllerTestCase() {
     @MockkBean
     lateinit var authCodeService: AuthCodeService
 
