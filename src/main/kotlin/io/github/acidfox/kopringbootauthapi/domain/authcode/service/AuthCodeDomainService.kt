@@ -2,6 +2,7 @@ package io.github.acidfox.kopringbootauthapi.domain.authcode.service
 
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.InvalidAuthCodeException
+import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.NotValidatedAuthCodeException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.TooManyAuthCodeRequestException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.model.AuthCode
 import io.github.acidfox.kopringbootauthapi.domain.authcode.repository.AuthCodeRepository
@@ -19,7 +20,7 @@ class AuthCodeDomainService(
     var issueLimitPerDay: Int = 10
     @Value("\${config.auth.auth-code-time-to-live-minute}")
     var authCodeTTL: Int = 3
-    @Value("\${auth-code-validated-live-time-minute}")
+    @Value("\${config.auth.auth-code-validated-live-time-minute}")
     var authCodeValidatedLifeTime: Int = 30
 
     fun issue(phoneNumber: String, authCodeType: AuthCodeType): AuthCode {
@@ -64,7 +65,19 @@ class AuthCodeDomainService(
         return true
     }
 
-    fun verifyValidation(phoneNumber: String, authCodeType: AuthCodeType) {
+    fun verifyValidation(phoneNumber: String, authCodeType: AuthCodeType): Boolean {
+        val now: LocalDateTime = LocalDateTime.now()
 
+        val authCode = authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType)
+
+        if (authCode === null || authCode.validatedAt === null) {
+            throw NotValidatedAuthCodeException("먼저 휴대전화 번호를 인증 해주세요")
+        }
+
+        if (Duration.between(authCode.validatedAt, now).toMinutes() >= authCodeValidatedLifeTime) {
+            throw NotValidatedAuthCodeException("휴대전화 번호 인증이 만료되었습니다. 다시 인증 해주세요")
+        }
+
+        return true
     }
 }

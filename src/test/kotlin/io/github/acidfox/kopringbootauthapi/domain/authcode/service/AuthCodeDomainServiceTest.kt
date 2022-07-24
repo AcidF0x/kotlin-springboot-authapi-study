@@ -314,8 +314,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
 
     @Test
     @DisplayName("인증 코드 검증 여부를 확인 할 수 있다")
-    fun testVerifyValidation()
-    {
+    fun testVerifyValidation() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
@@ -340,8 +339,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
 
     @Test
     @DisplayName("인증 코드 검증이 안된 경우 Exception을 발생시킨다")
-    fun testVerifyValidationExceptionWhenNotValidated()
-    {
+    fun testVerifyValidationExceptionWhenNotValidated() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
@@ -353,7 +351,6 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
             now.minusMinutes(authCodeDomainService.authCodeTTL.toLong())
         )
 
-
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When
@@ -364,12 +361,10 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
 
     @Test
     @DisplayName("인증 코드를 발급 받지 않은 경우 Exception을 발생 시킨다")
-    fun testVerifyValidationExceptionWhenNotIssued()
-    {
+    fun testVerifyValidationExceptionWhenNotIssued() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
-
 
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns null
 
@@ -381,8 +376,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
 
     @Test
     @DisplayName("인증 코드 검증후 유효 시간이 지난 경우 Exception을 발생시킨다")
-    fun testVerifyValidationExceptionWhenOverLifeTime()
-    {
+    fun testVerifyValidationExceptionWhenOverLifeTime() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD

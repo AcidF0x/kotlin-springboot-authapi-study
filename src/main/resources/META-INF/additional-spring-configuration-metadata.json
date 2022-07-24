@@ -21,8 +21,8 @@
       "description": "SMS 전송시 사용할 드라이버"
     },
     {
-      "name": "config.auth.auth-code-validated-live-time-minute",
-      "type": "java.lang.String",
+      "name": "config.auth-code-validated-live-time-minute",
+      "type": "java.lang.Integer",
       "description": "SMS 인증코드 검증 후 유효 시간"
     }
   ]
