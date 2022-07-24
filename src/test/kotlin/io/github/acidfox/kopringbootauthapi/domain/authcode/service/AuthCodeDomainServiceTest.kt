@@ -8,6 +8,7 @@ import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.TooManyAut
 import io.github.acidfox.kopringbootauthapi.domain.authcode.model.AuthCode
 import io.github.acidfox.kopringbootauthapi.domain.authcode.repository.AuthCodeRepository
 import io.mockk.Called
+import io.mockk.called
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -199,10 +200,10 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When && Then
-        verify { authCodeRepository.save(authCode) wasNot Called }
         Assertions.assertThrows(TooManyAuthCodeRequestException::class.java) {
             authCodeDomainService.issue(phoneNumber, authCodeType)
         }
+        verify { authCodeRepository.save(authCode) wasNot Called }
     }
 
     @Test
@@ -276,10 +277,10 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When && Then
-        verify { authCodeRepository.save(authCode) wasNot Called }
         Assertions.assertThrows(InvalidAuthCodeException::class.java) {
             authCodeDomainService.validate(phoneNumber, authCodeType, "000000")
         }
+        verify { authCodeRepository.save(authCode) wasNot Called }
     }
 
     @Test
@@ -300,10 +301,10 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When && Then
-        verify { authCodeRepository.save(authCode) wasNot Called }
         Assertions.assertThrows(InvalidAuthCodeException::class.java) {
             authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
         }
+        verify { authCodeRepository.save(authCode) wasNot Called }
     }
 
     @Test
@@ -326,10 +327,10 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
         // When && Then
-        verify { authCodeRepository.save(authCode) wasNot Called }
         Assertions.assertThrows(InvalidAuthCodeException::class.java) {
             authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
         }
+        verify { authCodeRepository.save(authCode) wasNot Called }
     }
 
     @Test
@@ -392,6 +393,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         Assertions.assertThrows(NotValidatedAuthCodeException::class.java) {
             authCodeDomainService.verifyValidation(phoneNumber, authCodeType)
         }
+        verify { authCodeRepository.save(allAny()) wasNot called }
     }
 
     @Test
