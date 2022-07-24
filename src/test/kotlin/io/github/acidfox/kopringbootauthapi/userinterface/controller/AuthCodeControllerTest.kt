@@ -108,7 +108,7 @@ internal class AuthCodeControllerTest : BaseControllerTestCase() {
     fun testValidateExceptionWhenEmptyCode() {
         // Given
         val url = "/api/auth/auth-code/sign-up/validate"
-        val requestDto = SignUpAuthCodeValidateRequest("02-119-119", "")
+        val requestDto = SignUpAuthCodeValidateRequest("01011112222", "")
         val json = mapper.writeValueAsString(requestDto)
 
         // When
