@@ -1,0 +1,10 @@
+POST http://localhost:8080/api/auth/signup
+Content-Type: application/json
+
+{
+  "phone_number": "01000000000",
+  "email": "mail@mail.com",
+  "nickname": "닉네임",
+  "password": "password",
+  "name": "이름"
+}
