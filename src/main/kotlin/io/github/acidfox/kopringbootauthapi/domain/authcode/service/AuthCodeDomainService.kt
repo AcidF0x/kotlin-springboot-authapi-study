@@ -52,7 +52,7 @@ class AuthCodeDomainService(
             throw InvalidAuthCodeException("유효하지 않은 인증 코드입니다")
         }
 
-        if (authCode.code !== code) {
+        if (authCode.code !== code || authCode.verifiedAt !== null) {
             throw InvalidAuthCodeException("유효하지 않은 인증 코드입니다")
         }
 
