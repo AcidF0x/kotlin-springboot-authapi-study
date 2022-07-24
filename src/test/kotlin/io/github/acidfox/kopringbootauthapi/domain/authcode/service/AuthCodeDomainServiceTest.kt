@@ -239,6 +239,26 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
     }
 
     @Test
+    @DisplayName("인증 코드를 검증 - 인증코드를 발급 내역이 없는 경우 exception을 발생시킨다")
+    fun testValidateWhenNotIssued() {
+        // Given
+        val phoneNumber = "01011112222"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+
+        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns null
+
+        // When && Then
+        Assertions.assertThrows(
+            InvalidAuthCodeException::class.java,
+            {
+                authCodeDomainService.validate(phoneNumber, authCodeType, "000000")
+            },
+            "먼저 인증코드를 발급 받아 주세요"
+        )
+        verify { authCodeRepository.save(allAny()) wasNot Called }
+    }
+
+    @Test
     @DisplayName("인증 코드를 검증 - 발급 받은 코드와 일치하지 않는 경우 exception을 발생시킨다")
     fun testValidateWhenInvalidCode() {
         // Given
