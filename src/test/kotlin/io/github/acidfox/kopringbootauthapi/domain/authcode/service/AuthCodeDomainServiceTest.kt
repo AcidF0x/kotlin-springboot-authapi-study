@@ -284,4 +284,30 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
             authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
         }
     }
+
+    @Test
+    @DisplayName("인증 코드를 검증 - 이미 인증 받은 코드의 경우 Exception을 발생시킨다")
+    fun testValidateWhenAlreadyValidated() {
+        // Given
+        val expectedCode = "111222"
+        val phoneNumber = "01011112222"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+        val authCode = AuthCode(
+            phoneNumber,
+            authCodeType,
+            expectedCode,
+            authCodeDomainService.issueLimitPerDay,
+            now.minusMinutes(authCodeDomainService.authCodeTTL.toLong())
+        )
+
+        authCode.verifiedAt = LocalDateTime.now()
+
+        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
+
+        // When && Then
+        verify { authCodeRepository.save(authCode) wasNot Called }
+        Assertions.assertThrows(InvalidAuthCodeException::class.java) {
+            authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
+        }
+    }
 }
