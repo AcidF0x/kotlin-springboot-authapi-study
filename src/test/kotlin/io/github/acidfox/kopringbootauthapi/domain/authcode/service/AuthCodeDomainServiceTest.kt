@@ -459,37 +459,13 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
-        val authCode = AuthCode(
-            phoneNumber,
-            authCodeType,
-            "123",
-            authCodeDomainService.issueLimitPerDay,
-            now.minusMinutes(authCodeDomainService.authCodeTTL.toLong())
-        )
 
-        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
-        every { authCodeRepository.delete(authCode) } just runs
+        every { authCodeRepository.deleteByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } just runs
 
         // When
         authCodeDomainService.delete(phoneNumber, authCodeType)
 
         // Then
-        verify(exactly = 1) { authCodeRepository.delete(authCode) }
-    }
-
-    @Test
-    @DisplayName("휴대전화 번호와 인증코드 타입이 같은 인증 코드 내역이 없으면 아무것도 하지 않는다")
-    fun testDeleteDoNothingWhenNotFound() {
-        // Given
-        val phoneNumber = "01011112222"
-        val authCodeType = AuthCodeType.RESET_PASSWORD
-
-        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns null
-
-        // When
-        authCodeDomainService.delete(phoneNumber, authCodeType)
-
-        // Then
-        verify(exactly = 0) { authCodeRepository.delete(any()) }
+        verify(exactly = 1) { authCodeRepository.deleteByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) }
     }
 }

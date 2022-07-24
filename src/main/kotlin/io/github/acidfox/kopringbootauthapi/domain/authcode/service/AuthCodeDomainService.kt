@@ -87,11 +87,6 @@ class AuthCodeDomainService(
         return true
     }
 
-    fun delete(phoneNumber: String, authCodeType: AuthCodeType) {
-        val authCode = authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType)
-
-        if (authCode !== null) {
-            authCodeRepository.delete(authCode)
-        }
-    }
+    fun delete(phoneNumber: String, authCodeType: AuthCodeType) =
+        authCodeRepository.deleteByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType)
 }
