@@ -455,8 +455,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
 
     @Test
     @DisplayName("휴대전화 번호와 인증코드 타입이 같은 인증 코드 내역이 있으면 삭제한다")
-    fun testDelete()
-    {
+    fun testDelete() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
@@ -475,13 +474,12 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         authCodeDomainService.delete(phoneNumber, authCodeType)
 
         // Then
-        verify(exactly = 1){ authCodeRepository.delete(authCode) }
+        verify(exactly = 1) { authCodeRepository.delete(authCode) }
     }
 
     @Test
     @DisplayName("휴대전화 번호와 인증코드 타입이 같은 인증 코드 내역이 없으면 아무것도 하지 않는다")
-    fun testDeleteDoNothingWhenNotFound()
-    {
+    fun testDeleteDoNothingWhenNotFound() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
@@ -492,6 +490,6 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         authCodeDomainService.delete(phoneNumber, authCodeType)
 
         // Then
-        verify(exactly = 0){ authCodeRepository.delete(any())}
+        verify(exactly = 0) { authCodeRepository.delete(any()) }
     }
 }
