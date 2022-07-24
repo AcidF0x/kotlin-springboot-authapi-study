@@ -12,7 +12,9 @@ import io.mockk.called
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
+import io.mockk.just
 import io.mockk.mockkStatic
+import io.mockk.runs
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -393,7 +395,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
 
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
-        // When
+        // When && Then
         Assertions.assertThrows(
             NotValidatedAuthCodeException::class.java,
             {
@@ -412,7 +414,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
 
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns null
 
-        // When
+        // When && Then
         Assertions.assertThrows(
             NotValidatedAuthCodeException::class.java,
             {
@@ -441,7 +443,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
 
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
-        // When
+        // When && Then
         Assertions.assertThrows(
             NotValidatedAuthCodeException::class.java,
             {
@@ -449,5 +451,47 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
             },
             "휴대전화 번호 인증이 만료되었습니다. 다시 인증 해주세요"
         )
+    }
+
+    @Test
+    @DisplayName("휴대전화 번호와 인증코드 타입이 같은 인증 코드 내역이 있으면 삭제한다")
+    fun testDelete()
+    {
+        // Given
+        val phoneNumber = "01011112222"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+        val authCode = AuthCode(
+            phoneNumber,
+            authCodeType,
+            "123",
+            authCodeDomainService.issueLimitPerDay,
+            now.minusMinutes(authCodeDomainService.authCodeTTL.toLong())
+        )
+
+        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
+        every { authCodeRepository.delete(authCode) } just runs
+
+        // When
+        authCodeDomainService.delete(phoneNumber, authCodeType)
+
+        // Then
+        verify(exactly = 1){ authCodeRepository.delete(authCode) }
+    }
+
+    @Test
+    @DisplayName("휴대전화 번호와 인증코드 타입이 같은 인증 코드 내역이 없으면 아무것도 하지 않는다")
+    fun testDeleteDoNothingWhenNotFound()
+    {
+        // Given
+        val phoneNumber = "01011112222"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+
+        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns null
+
+        // When
+        authCodeDomainService.delete(phoneNumber, authCodeType)
+
+        // Then
+        verify(exactly = 0){ authCodeRepository.delete(any())}
     }
 }
