@@ -74,10 +74,11 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
         val preSendCount = authCodeDomainService.issueLimitPerDay - 1
+        val code = "123123"
         val authCode = AuthCode(
             phoneNumber,
             authCodeType,
-            "123123",
+            code,
             preSendCount,
             now.minusMinutes(2)
         )
@@ -100,7 +101,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         // Then
         Assertions.assertSame(phoneNumber, result.phoneNumber)
         Assertions.assertSame(authCodeType, result.authCodeType)
-        Assertions.assertNotNull(result.code)
+        Assertions.assertNotSame(code, result.code)
         Assertions.assertSame(preSendCount + 1, result.sendCount)
         Assertions.assertTrue(now.isEqual(result.requestedAt))
         Assertions.assertNull(result.validatedAt)
@@ -112,10 +113,11 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
+        val code = "222222"
         val authCode = AuthCode(
             phoneNumber,
             authCodeType,
-            "123123",
+            code,
             authCodeDomainService.issueLimitPerDay,
             now.minusDays(1)
         )
@@ -138,7 +140,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         // Then
         Assertions.assertSame(phoneNumber, result.phoneNumber)
         Assertions.assertSame(authCodeType, result.authCodeType)
-        Assertions.assertNotNull(result.code)
+        Assertions.assertNotSame(code, result.code)
         Assertions.assertSame(1, result.sendCount)
         Assertions.assertTrue(now.isEqual(result.requestedAt))
         Assertions.assertNull(result.validatedAt)
@@ -149,10 +151,11 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         // Given
         val phoneNumber = "01011112222"
         val authCodeType = AuthCodeType.RESET_PASSWORD
+        val code = "444444"
         val authCode = AuthCode(
             phoneNumber,
             authCodeType,
-            "123123",
+            code,
             authCodeDomainService.issueLimitPerDay,
             now.minusHours(1)
         )
@@ -177,7 +180,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         // Then
         Assertions.assertSame(phoneNumber, result.phoneNumber)
         Assertions.assertSame(authCodeType, result.authCodeType)
-        Assertions.assertNotNull(result.code)
+        Assertions.assertNotSame(code, result.code)
         Assertions.assertSame(1, result.sendCount)
         Assertions.assertTrue(now.isEqual(result.requestedAt))
         Assertions.assertNull(result.validatedAt)
