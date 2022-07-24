@@ -26,5 +26,5 @@ class AuthCode(
     @Column(nullable = false)
     var requestedAt: LocalDateTime
 ) : BaseEntity() {
-    var verifiedAt: LocalDateTime? = null
+    var validatedAt: LocalDateTime? = null
 }

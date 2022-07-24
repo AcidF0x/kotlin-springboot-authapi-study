@@ -62,7 +62,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         Assertions.assertSame(expectedAuthCode.code, result.code)
         Assertions.assertSame(expectedAuthCode.sendCount, result.sendCount)
         Assertions.assertTrue(now.isEqual(result.requestedAt))
-        Assertions.assertNull(result.verifiedAt)
+        Assertions.assertNull(result.validatedAt)
     }
 
     @Test
@@ -101,7 +101,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         Assertions.assertNotNull(result.code)
         Assertions.assertSame(preSendCount + 1, result.sendCount)
         Assertions.assertTrue(now.isEqual(result.requestedAt))
-        Assertions.assertNull(result.verifiedAt)
+        Assertions.assertNull(result.validatedAt)
     }
 
     @Test
@@ -139,7 +139,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         Assertions.assertNotNull(result.code)
         Assertions.assertSame(1, result.sendCount)
         Assertions.assertTrue(now.isEqual(result.requestedAt))
-        Assertions.assertNull(result.verifiedAt)
+        Assertions.assertNull(result.validatedAt)
     }
     @Test
     @DisplayName("인증코드 일일 발송 제한량을 넘은 발급 기록이 있더라도 인증이 완료된 기록이면 발급 가능하다")
@@ -154,7 +154,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
             authCodeDomainService.issueLimitPerDay,
             now.minusHours(1)
         )
-        authCode.verifiedAt = LocalDateTime.now()
+        authCode.validatedAt = LocalDateTime.now()
 
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
         every {
@@ -164,7 +164,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
                         it.authCodeType === authCodeType &&
                         it.sendCount == 1 &&
                         it.requestedAt.isEqual(now) &&
-                        it.verifiedAt === null
+                        it.validatedAt === null
                 }
             )
         } returns authCode
@@ -178,7 +178,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         Assertions.assertNotNull(result.code)
         Assertions.assertSame(1, result.sendCount)
         Assertions.assertTrue(now.isEqual(result.requestedAt))
-        Assertions.assertNull(result.verifiedAt)
+        Assertions.assertNull(result.validatedAt)
     }
 
     @Test
@@ -225,7 +225,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
                 match {
                     it.phoneNumber == phoneNumber &&
                         it.authCodeType === authCodeType &&
-                        it.verifiedAt!!.isEqual(now)
+                        it.validatedAt!!.isEqual(now)
                 }
             )
         } returns authCode
@@ -300,7 +300,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
             now.minusMinutes(authCodeDomainService.authCodeTTL.toLong())
         )
 
-        authCode.verifiedAt = LocalDateTime.now()
+        authCode.validatedAt = LocalDateTime.now()
 
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 

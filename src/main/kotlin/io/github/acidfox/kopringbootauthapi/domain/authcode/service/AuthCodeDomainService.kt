@@ -30,16 +30,16 @@ class AuthCodeDomainService(
         }
 
         if (now.toLocalDate().isEqual(authCode.requestedAt.toLocalDate())) {
-            if (authCode.sendCount >= issueLimitPerDay && authCode.verifiedAt === null) {
+            if (authCode.sendCount >= issueLimitPerDay && authCode.validatedAt === null) {
                 throw TooManyAuthCodeRequestException("일일 요청 제한을 초과하였습니다")
             }
-            authCode.sendCount = if (authCode.verifiedAt === null) authCode.sendCount + 1 else 1
+            authCode.sendCount = if (authCode.validatedAt === null) authCode.sendCount + 1 else 1
         } else {
             authCode.sendCount = 1
         }
 
         authCode.requestedAt = LocalDateTime.now()
-        authCode.verifiedAt = null
+        authCode.validatedAt = null
 
         return authCodeRepository.save(authCode)
     }
@@ -52,11 +52,11 @@ class AuthCodeDomainService(
             throw InvalidAuthCodeException("유효하지 않은 인증 코드입니다")
         }
 
-        if (authCode.code !== code || authCode.verifiedAt !== null) {
+        if (authCode.code !== code || authCode.validatedAt !== null) {
             throw InvalidAuthCodeException("유효하지 않은 인증 코드입니다")
         }
 
-        authCode.verifiedAt = LocalDateTime.now()
+        authCode.validatedAt = LocalDateTime.now()
         authCodeRepository.save(authCode)
 
         return true
