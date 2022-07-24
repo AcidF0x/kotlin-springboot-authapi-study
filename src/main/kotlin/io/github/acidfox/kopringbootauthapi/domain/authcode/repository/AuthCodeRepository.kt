@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface AuthCodeRepository : JpaRepository<AuthCode, Long> {
     fun findByPhoneNumberAndAuthCodeType(phoneNumber: String, authCodeType: AuthCodeType): AuthCode?
+    fun deleteByPhoneNumberAndAuthCodeType(phoneNumber: String, authCodeType: AuthCodeType)
 }

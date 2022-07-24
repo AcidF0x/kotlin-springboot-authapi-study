@@ -9,6 +9,8 @@ import io.github.acidfox.kopringbootauthapi.domain.user.service.UserDomainServic
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
+import io.mockk.just
+import io.mockk.runs
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -45,6 +47,7 @@ internal class AuthServiceTest : BaseTestCase() {
 
         every { authCodeDomainService.verifyValidation(request.phoneNumber, AuthCodeType.SIGN_UP) } returns true
         every { userDomainService.signUp(request) } returns mockUser
+        every { authCodeDomainService.delete(request.phoneNumber, AuthCodeType.SIGN_UP) } just runs
 
         // When
         val result = authService.signUp(request)

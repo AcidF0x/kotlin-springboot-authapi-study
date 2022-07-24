@@ -12,12 +12,11 @@ class AuthService(
     private val authCodeDomainService: AuthCodeDomainService,
     private val userDomainService: UserDomainService
 ) {
-
     @Transactional
     fun signUp(requestDto: SignUpRequest): Boolean {
         authCodeDomainService.verifyValidation(requestDto.phoneNumber, AuthCodeType.SIGN_UP)
         userDomainService.signUp(requestDto)
-
+        authCodeDomainService.delete(requestDto.phoneNumber, AuthCodeType.SIGN_UP)
         return true
     }
 }
