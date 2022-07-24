@@ -10,5 +10,5 @@ CREATE TABLE user
     updated_at   datetime     NOT NULL,
     CONSTRAINT pk_user PRIMARY KEY (id),
     CONSTRAINT unique_user_email UNIQUE (email),
-    CONSTRAINT unique_user_phonenumber UNIQUE (phone_number),
+    CONSTRAINT unique_user_phonenumber UNIQUE (phone_number)
 );
