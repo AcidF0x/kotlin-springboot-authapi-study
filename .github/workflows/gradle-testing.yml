@@ -23,5 +23,7 @@ jobs:
       run: javac -version
     - name: Add Permission
       run: chmod +x gradlew
+    - name: Run Lint
+      run: ./gradlew KtLintCheck
     - name: Run Testing
       run: ./gradlew test

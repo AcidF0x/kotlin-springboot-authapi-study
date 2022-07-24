@@ -1,8 +1,8 @@
 package io.github.acidfox.kopringbootauthapi.userinterface.controller
 
+import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.service.AuthCodeService
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
-import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping

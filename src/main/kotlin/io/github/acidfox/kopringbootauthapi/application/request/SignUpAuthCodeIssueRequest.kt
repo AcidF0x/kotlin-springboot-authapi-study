@@ -1,7 +1,6 @@
 package io.github.acidfox.kopringbootauthapi.application.request
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Pattern
 
 data class SignUpAuthCodeIssueRequest(
