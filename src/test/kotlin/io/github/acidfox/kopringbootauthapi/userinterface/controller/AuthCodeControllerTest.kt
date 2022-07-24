@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.github.acidfox.kopringbootauthapi.BaseControllerTestCase
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
+import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeValidateRequest
 import io.github.acidfox.kopringbootauthapi.application.service.AuthCodeService
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.mockk.Called
@@ -63,5 +64,60 @@ internal class AuthCodeControllerTest : BaseControllerTestCase() {
         result.andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.code").value("-1"))
             .andExpect(jsonPath("$.message").value("휴대전화 번호를 확인해주세요"))
+    }
+
+    @Test
+    @DisplayName("회원 가입 인증 코드를 검증 할 수 있다")
+    fun testValidateSignupAuthCode() {
+        // Given
+        val url = "/api/auth/auth-code/sign-up/validate"
+        val requestDto = SignUpAuthCodeValidateRequest("01011112222", "123123")
+        val json = mapper.writeValueAsString(requestDto)
+        every { authCodeService.validate(requestDto.phoneNumber, AuthCodeType.SIGN_UP, requestDto.code) } returns true
+
+        // When
+        val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+
+        // Then
+        verify(exactly = 1) {
+            authCodeService.validate(requestDto.phoneNumber, AuthCodeType.SIGN_UP, requestDto.code)
+        }
+        result.andExpect(status().isOk)
+    }
+
+    @Test
+    @DisplayName("올바르지 않은 휴대 전화 번호는 회원 가입 인증 코드를 검증 할 수 없다")
+    fun testValidateExceptionWhenInvalidPhoneNumber() {
+        // Given
+        val url = "/api/auth/auth-code/sign-up/validate"
+        val requestDto = SignUpAuthCodeValidateRequest("02-119-119", "123123")
+        val json = mapper.writeValueAsString(requestDto)
+
+        // When
+        val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+
+        // Then
+        verify { authCodeService wasNot Called }
+        result.andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value("-1"))
+            .andExpect(jsonPath("$.message").value("휴대전화 번호를 확인해주세요"))
+    }
+
+    @Test
+    @DisplayName("인증코드 없이 회원 가입 인증 코드를 검증 할 수 없다")
+    fun testValidateExceptionWhenEmptyCode() {
+        // Given
+        val url = "/api/auth/auth-code/sign-up/validate"
+        val requestDto = SignUpAuthCodeValidateRequest("02-119-119", "")
+        val json = mapper.writeValueAsString(requestDto)
+
+        // When
+        val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+
+        // Then
+        verify { authCodeService wasNot Called }
+        result.andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value("-1"))
+            .andExpect(jsonPath("$.message").value("코드를 입력해주세요"))
     }
 }

@@ -2,6 +2,7 @@ package io.github.acidfox.kopringbootauthapi.domain.authcode.service
 
 import io.github.acidfox.kopringbootauthapi.BaseTestCase
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
+import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.InvalidAuthCodeException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.TooManyAuthCodeRequestException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.model.AuthCode
 import io.github.acidfox.kopringbootauthapi.domain.authcode.repository.AuthCodeRepository
@@ -237,7 +238,7 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
     }
 
     @Test
-    @DisplayName("인증 코드를 검증 - 발급 받은 코드와 일치하지 않는 경우 false를 리턴한다")
+    @DisplayName("인증 코드를 검증 - 발급 받은 코드와 일치하지 않는 경우 exception을 발생시킨다")
     fun testValidateWhenInvalidCode() {
         // Given
         val expectedCode = "111222"
@@ -253,16 +254,15 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
 
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
-        // When
-        val result = authCodeDomainService.validate(phoneNumber, authCodeType, "000000")
-
-        // Then
+        // When && Then
         verify { authCodeRepository.save(authCode) wasNot Called }
-        Assertions.assertFalse(result)
+        Assertions.assertThrows(InvalidAuthCodeException::class.java) {
+            authCodeDomainService.validate(phoneNumber, authCodeType, "000000")
+        }
     }
 
     @Test
-    @DisplayName("인증 코드를 검증 - 코드의 일치 여부와 상관 없이 유효 기간이 지난 경우 false를 리턴한다")
+    @DisplayName("인증 코드를 검증 - 코드의 일치 여부와 상관 없이 유효 기간이 지난 경우 exception을 발생시킨다")
     fun testValidateWhenExpired() {
         // Given
         val expectedCode = "111222"
@@ -278,11 +278,10 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
 
         every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
 
-        // When
-        val result = authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
-
-        // Then
+        // When && Then
         verify { authCodeRepository.save(authCode) wasNot Called }
-        Assertions.assertFalse(result)
+        Assertions.assertThrows(InvalidAuthCodeException::class.java) {
+            authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
+        }
     }
 }

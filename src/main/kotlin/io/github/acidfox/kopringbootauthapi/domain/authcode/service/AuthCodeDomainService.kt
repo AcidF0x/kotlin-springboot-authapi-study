@@ -1,6 +1,7 @@
 package io.github.acidfox.kopringbootauthapi.domain.authcode.service
 
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
+import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.InvalidAuthCodeException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.TooManyAuthCodeRequestException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.model.AuthCode
 import io.github.acidfox.kopringbootauthapi.domain.authcode.repository.AuthCodeRepository
@@ -48,11 +49,11 @@ class AuthCodeDomainService(
 
         val authCode = authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType)
         if (Duration.between(authCode!!.requestedAt, now).toMinutes() >= authCodeTTL) {
-            return false
+            throw InvalidAuthCodeException("유효하지 않은 인증 코드입니다")
         }
 
         if (authCode.code !== code) {
-            return false
+            throw InvalidAuthCodeException("유효하지 않은 인증 코드입니다")
         }
 
         authCode.verifiedAt = LocalDateTime.now()
