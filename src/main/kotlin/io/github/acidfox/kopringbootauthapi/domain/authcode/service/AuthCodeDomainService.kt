@@ -19,6 +19,8 @@ class AuthCodeDomainService(
     var issueLimitPerDay: Int = 10
     @Value("\${config.auth.auth-code-time-to-live-minute}")
     var authCodeTTL: Int = 3
+    @Value("\${auth-code-validated-live-time-minute}")
+    var authCodeValidatedLifeTime: Int = 30
 
     fun issue(phoneNumber: String, authCodeType: AuthCodeType): AuthCode {
         val now: LocalDateTime = LocalDateTime.now()
@@ -60,5 +62,9 @@ class AuthCodeDomainService(
         authCodeRepository.save(authCode)
 
         return true
+    }
+
+    fun verifyValidation(phoneNumber: String, authCodeType: AuthCodeType) {
+
     }
 }
