@@ -5,7 +5,9 @@ import com.ninjasquad.springmockk.MockkBean
 import io.github.acidfox.kopringbootauthapi.BaseControllerTestCase
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeValidateRequest
+import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
 import io.github.acidfox.kopringbootauthapi.application.service.AuthCodeService
+import io.github.acidfox.kopringbootauthapi.application.service.AuthService
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.mockk.Called
 import io.mockk.every
@@ -24,6 +26,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 internal class AuthControllerTest : BaseControllerTestCase() {
     @MockkBean
     lateinit var authCodeService: AuthCodeService
+
+    @MockkBean
+    lateinit var authService: AuthService
 
     @Autowired
     lateinit var mapper: ObjectMapper
@@ -119,5 +124,81 @@ internal class AuthControllerTest : BaseControllerTestCase() {
         result.andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.code").value("-1"))
             .andExpect(jsonPath("$.message").value("코드를 입력해주세요"))
+    }
+
+    @Test
+    @DisplayName("회원 가입시 필요 정보가 모두 정상적이어야 회원 가입 할 수 있다")
+    fun testSignupExceptionWhenInvalidParams() {
+        // Given
+        val url = "/api/auth/signup"
+
+        val requestDto = SignUpRequest(
+            "test@mail.com",
+            "name",
+            "nickname",
+            "password",
+            "01011112222"
+        )
+
+        // fieldName, changed value, expectedMessage
+        val testCase = listOf(
+            Triple("email", "", "이메일을 입력 해주세요"),
+            Triple("email", "not-completed-email@", "올바른 이메일이 아닙니다"),
+            Triple("name", "", "이름을 입력 해주세요"),
+            Triple("nickname", "", "닉네임을 입력 해주세요"),
+            Triple("password", "short", "비밀번호는 6자 이상 입력해주세요"),
+            Triple("password", "", "비밀번호는 6자 이상 입력해주세요"),
+            Triple("phoneNumber", "00012341234", "휴대전화 번호를 확인해주세요"),
+            Triple("phoneNumber", "", "휴대전화 번호를 확인해주세요"),
+        )
+
+        for (i in testCase) {
+            var oldValue: String
+            val property = requestDto.javaClass.getDeclaredField(i.first)
+
+            property.isAccessible = true
+            oldValue = property.get(requestDto) as String
+            property.set(requestDto, i.second)
+
+            val json = mapper.writeValueAsString(requestDto)
+
+            // When
+            val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+
+            // Then
+            verify { authService wasNot Called }
+            result.andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.code").value("-1"))
+                .andExpect(jsonPath("$.message").value(i.third))
+
+            property.set(requestDto, oldValue)
+            property.isAccessible = false
+        }
+    }
+
+    @Test
+    @DisplayName("회원 가입시 필요 정보가 모두 정상적이면 회원 가입 할 수 있다")
+    fun testSignup() {
+        // Given
+        val url = "/api/auth/signup"
+
+        val requestDto = SignUpRequest(
+            "test@mail.com",
+            "name",
+            "nickname",
+            "password",
+            "01011112222"
+        )
+
+        val json = mapper.writeValueAsString(requestDto)
+
+        every { authService.signUp(requestDto) } returns true
+
+        // When
+        val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+
+        // Then
+        verify(exactly = 1) { authService.signUp(requestDto) }
+        result.andExpect(status().isOk)
     }
 }
