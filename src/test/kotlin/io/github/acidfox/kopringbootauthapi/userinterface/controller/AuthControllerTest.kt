@@ -35,7 +35,7 @@ internal class AuthControllerTest : BaseControllerTestCase() {
     @DisplayName("Post 요청으로 회원 가입 인증 코드 요청을 할 수 있다")
     fun testIssueSignUpAuthCode() {
         // Given
-        val url = "/api/auth/auth-code/sign-up"
+        val url = "/api/auth/auth-code/signup"
         val requestDto = SignUpAuthCodeIssueRequest("01011112222")
         val json = mapper.writeValueAsString(requestDto)
 
@@ -53,7 +53,7 @@ internal class AuthControllerTest : BaseControllerTestCase() {
     @DisplayName("휴대전화 형식이 아닌 번호는 인증 코드 요청을 할 수 없다")
     fun testIssueExceptionWhenPhoneNumberIsInvalidFormat() {
         // Given
-        val url = "/api/auth/auth-code/sign-up"
+        val url = "/api/auth/auth-code/signup"
         val requestDto = SignUpAuthCodeIssueRequest("02-119-119")
         val json = mapper.writeValueAsString(requestDto)
         // When
@@ -70,7 +70,7 @@ internal class AuthControllerTest : BaseControllerTestCase() {
     @DisplayName("회원 가입 인증 코드를 검증 할 수 있다")
     fun testValidateSignupAuthCode() {
         // Given
-        val url = "/api/auth/auth-code/sign-up/validate"
+        val url = "/api/auth/auth-code/signup/validate"
         val requestDto = SignUpAuthCodeValidateRequest("01011112222", "123123")
         val json = mapper.writeValueAsString(requestDto)
         every { authCodeService.validate(requestDto.phoneNumber, AuthCodeType.SIGN_UP, requestDto.code) } returns true
@@ -89,7 +89,7 @@ internal class AuthControllerTest : BaseControllerTestCase() {
     @DisplayName("올바르지 않은 휴대 전화 번호는 회원 가입 인증 코드를 검증 할 수 없다")
     fun testValidateExceptionWhenInvalidPhoneNumber() {
         // Given
-        val url = "/api/auth/auth-code/sign-up/validate"
+        val url = "/api/auth/auth-code/signup/validate"
         val requestDto = SignUpAuthCodeValidateRequest("02-119-119", "123123")
         val json = mapper.writeValueAsString(requestDto)
 
@@ -107,7 +107,7 @@ internal class AuthControllerTest : BaseControllerTestCase() {
     @DisplayName("인증코드 없이 회원 가입 인증 코드를 검증 할 수 없다")
     fun testValidateExceptionWhenEmptyCode() {
         // Given
-        val url = "/api/auth/auth-code/sign-up/validate"
+        val url = "/api/auth/auth-code/signup/validate"
         val requestDto = SignUpAuthCodeValidateRequest("01011112222", "")
         val json = mapper.writeValueAsString(requestDto)
 
