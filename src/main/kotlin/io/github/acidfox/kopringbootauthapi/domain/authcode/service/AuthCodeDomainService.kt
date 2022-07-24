@@ -51,7 +51,12 @@ class AuthCodeDomainService(
         val now: LocalDateTime = LocalDateTime.now()
 
         val authCode = authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType)
-        if (Duration.between(authCode!!.requestedAt, now).toMinutes() >= authCodeTTL) {
+
+        if (authCode === null) {
+            throw InvalidAuthCodeException("먼저 인증코드를 발급 받아 주세요")
+        }
+
+        if (Duration.between(authCode.requestedAt, now).toMinutes() >= authCodeTTL) {
             throw InvalidAuthCodeException("유효하지 않은 인증 코드입니다")
         }
 
