@@ -8,6 +8,7 @@ import javax.validation.constraints.Size
 
 data class SignUpRequest(
     @field: Email(message = "올바른 이메일이 아닙니다")
+    @field: NotBlank(message = "이메일을 입력 해주세요")
     val email: String,
 
     @field: NotBlank(message = "이름을 입력 해주세요")
@@ -16,7 +17,6 @@ data class SignUpRequest(
     @field: NotBlank(message = "닉네임을 입력 해주세요")
     val nickname: String,
 
-    @field: NotBlank(message = "비밀번호를 입력 해주세요")
     @field: Size(min = 6, message = "비밀번호는 6자 이상 입력해주세요")
     val password: String,
 
