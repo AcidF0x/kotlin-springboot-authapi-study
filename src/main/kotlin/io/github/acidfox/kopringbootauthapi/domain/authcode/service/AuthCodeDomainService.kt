@@ -41,6 +41,7 @@ class AuthCodeDomainService(
             authCode.sendCount = 1
         }
 
+        authCode.code = code
         authCode.requestedAt = LocalDateTime.now()
         authCode.validatedAt = null
 
@@ -60,7 +61,7 @@ class AuthCodeDomainService(
             throw InvalidAuthCodeException("유효하지 않은 인증 코드입니다")
         }
 
-        if (authCode.code !== code || authCode.validatedAt !== null) {
+        if (authCode.code != code || authCode.validatedAt !== null) {
             throw InvalidAuthCodeException("유효하지 않은 인증 코드입니다")
         }
 
