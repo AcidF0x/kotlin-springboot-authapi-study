@@ -3,6 +3,7 @@ config:
   auth:
     auth-code-issue-limit-per-day: 10
     auth-code-time-to-live-minute: 3
+    auth-code-validated-live-time-minute: 30
   sms:
     driver: file
 

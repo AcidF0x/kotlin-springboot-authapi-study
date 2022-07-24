@@ -3,6 +3,7 @@ package io.github.acidfox.kopringbootauthapi.domain.authcode.service
 import io.github.acidfox.kopringbootauthapi.BaseTestCase
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.InvalidAuthCodeException
+import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.NotValidatedAuthCodeException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.TooManyAuthCodeRequestException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.model.AuthCode
 import io.github.acidfox.kopringbootauthapi.domain.authcode.repository.AuthCodeRepository
@@ -308,6 +309,92 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         verify { authCodeRepository.save(authCode) wasNot Called }
         Assertions.assertThrows(InvalidAuthCodeException::class.java) {
             authCodeDomainService.validate(phoneNumber, authCodeType, expectedCode)
+        }
+    }
+
+    @Test
+    @DisplayName("인증 코드 검증 여부를 확인 할 수 있다")
+    fun testVerifyValidation() {
+        // Given
+        val phoneNumber = "01011112222"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+        val authCode = AuthCode(
+            phoneNumber,
+            authCodeType,
+            "123",
+            authCodeDomainService.issueLimitPerDay,
+            now.minusMinutes(authCodeDomainService.authCodeTTL.toLong())
+        )
+
+        authCode.validatedAt = LocalDateTime.now()
+
+        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
+
+        // When
+        val result = authCodeDomainService.verifyValidation(phoneNumber, authCodeType)
+
+        // Then
+        Assertions.assertTrue(result)
+    }
+
+    @Test
+    @DisplayName("인증 코드 검증이 안된 경우 Exception을 발생시킨다")
+    fun testVerifyValidationExceptionWhenNotValidated() {
+        // Given
+        val phoneNumber = "01011112222"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+        val authCode = AuthCode(
+            phoneNumber,
+            authCodeType,
+            "123",
+            authCodeDomainService.issueLimitPerDay,
+            now.minusMinutes(authCodeDomainService.authCodeTTL.toLong())
+        )
+
+        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
+
+        // When
+        Assertions.assertThrows(NotValidatedAuthCodeException::class.java) {
+            authCodeDomainService.verifyValidation(phoneNumber, authCodeType)
+        }
+    }
+
+    @Test
+    @DisplayName("인증 코드를 발급 받지 않은 경우 Exception을 발생 시킨다")
+    fun testVerifyValidationExceptionWhenNotIssued() {
+        // Given
+        val phoneNumber = "01011112222"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+
+        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns null
+
+        // When
+        Assertions.assertThrows(NotValidatedAuthCodeException::class.java) {
+            authCodeDomainService.verifyValidation(phoneNumber, authCodeType)
+        }
+    }
+
+    @Test
+    @DisplayName("인증 코드 검증후 유효 시간이 지난 경우 Exception을 발생시킨다")
+    fun testVerifyValidationExceptionWhenOverLifeTime() {
+        // Given
+        val phoneNumber = "01011112222"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+        val authCode = AuthCode(
+            phoneNumber,
+            authCodeType,
+            "123",
+            authCodeDomainService.issueLimitPerDay,
+            now.minusMinutes(authCodeDomainService.authCodeTTL.toLong())
+        )
+        authCode.validatedAt = LocalDateTime.now()
+            .minusMinutes(authCodeDomainService.authCodeValidatedLifeTime.toLong())
+
+        every { authCodeRepository.findByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) } returns authCode
+
+        // When
+        Assertions.assertThrows(NotValidatedAuthCodeException::class.java) {
+            authCodeDomainService.verifyValidation(phoneNumber, authCodeType)
         }
     }
 }
