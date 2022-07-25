@@ -1,8 +1,10 @@
 package io.github.acidfox.kopringbootauthapi.userinterface.controller
 
+import io.github.acidfox.kopringbootauthapi.application.request.LoginRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeValidateRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
+import io.github.acidfox.kopringbootauthapi.application.response.LoginResponse
 import io.github.acidfox.kopringbootauthapi.application.service.AuthCodeService
 import io.github.acidfox.kopringbootauthapi.application.service.AuthService
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
@@ -36,5 +38,10 @@ class AuthController(
     fun signUp(@RequestBody @Validated request: SignUpRequest): String {
         authService.signUp(request)
         return ResponseEntity.ok().body("").toString()
+    }
+
+    @PostMapping("/login")
+    fun login(@RequestBody @Validated request: LoginRequest): LoginResponse {
+        return authService.login(request)
     }
 }
