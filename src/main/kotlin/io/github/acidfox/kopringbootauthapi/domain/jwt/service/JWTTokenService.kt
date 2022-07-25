@@ -22,9 +22,9 @@ class JWTTokenService(
         jwtSecretKey = Base64.getEncoder().encodeToString(jwtSecretKey.toByteArray())
     }
 
-    fun createJWTToken(phoneNumber: String): String {
+    fun createJWTToken(email: String): String {
         val now = LocalDateTime.now()
-        val claims = Jwts.claims().setSubject(phoneNumber)
+        val claims = Jwts.claims().setSubject(email)
 
         return Jwts.builder()
             .setClaims(claims)
