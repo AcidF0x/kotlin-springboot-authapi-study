@@ -3,9 +3,11 @@ package io.github.acidfox.kopringbootauthapi.userinterface.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.github.acidfox.kopringbootauthapi.BaseControllerTestCase
+import io.github.acidfox.kopringbootauthapi.application.request.LoginRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeValidateRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
+import io.github.acidfox.kopringbootauthapi.application.response.LoginResponse
 import io.github.acidfox.kopringbootauthapi.application.service.AuthCodeService
 import io.github.acidfox.kopringbootauthapi.application.service.AuthService
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
@@ -200,5 +202,74 @@ internal class AuthControllerTest : BaseControllerTestCase() {
         // Then
         verify(exactly = 1) { authService.signUp(requestDto) }
         result.andExpect(status().isOk)
+    }
+
+    @Test
+    @DisplayName("이메일과 패스워드가 정상적이면 로그인 할 수 있다")
+    fun testLogin() {
+        // Given
+        val url = "/api/auth/login"
+
+        val requestDto = LoginRequest(
+            "test@mail.com",
+            "this_is_password"
+        )
+
+        val json = mapper.writeValueAsString(requestDto)
+        val mockResponse = LoginResponse("this is jwt token :)")
+
+        every { authService.login(requestDto) } returns mockResponse
+
+        // When
+        val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+
+        // Then
+        verify(exactly = 1) { authService.login(requestDto) }
+        result.andExpect(status().isOk)
+            .andExpect(jsonPath("$.token").value(mockResponse.token))
+            .andExpect(jsonPath("$.token_type").value(mockResponse.tokenType))
+    }
+
+    @Test
+    @DisplayName("이메일과 패스워드가 정상적이지 않으면 로그인 할 수 없다")
+    fun testLoginExceptionWhenInvalidParams() {
+
+        val url = "/api/auth/login"
+
+        val requestDto = LoginRequest(
+            "test@mail.com",
+            "this_is_password"
+        )
+
+        // fieldName, changed value, expectedMessage
+        val testCase = listOf(
+            Triple("email", "", "이메일을 입력 해주세요"),
+            Triple("email", "not-completed-email@", "올바른 이메일이 아닙니다"),
+            Triple("password", "short", "비밀번호는 6자 이상 입력해주세요"),
+            Triple("password", "", "비밀번호는 6자 이상 입력해주세요"),
+        )
+
+        for (i in testCase) {
+            var oldValue: String
+            val property = requestDto.javaClass.getDeclaredField(i.first)
+
+            property.isAccessible = true
+            oldValue = property.get(requestDto) as String
+            property.set(requestDto, i.second)
+
+            val json = mapper.writeValueAsString(requestDto)
+
+            // When
+            val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+
+            // Then
+            verify { authService wasNot Called }
+            result.andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.code").value("-1"))
+                .andExpect(jsonPath("$.message").value(i.third))
+
+            property.set(requestDto, oldValue)
+            property.isAccessible = false
+        }
     }
 }
