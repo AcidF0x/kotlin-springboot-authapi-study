@@ -41,4 +41,6 @@ class UserDomainService(
 
         return true
     }
+
+    fun findByEmail(email: String) = userRepository.findByEmail(email)
 }
