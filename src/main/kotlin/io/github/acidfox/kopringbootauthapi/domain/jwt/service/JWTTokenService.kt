@@ -1,5 +1,8 @@
 package io.github.acidfox.kopringbootauthapi.domain.jwt.service
 
+import io.github.acidfox.kopringbootauthapi.domain.jwt.exception.ExpiredTokenException
+import io.github.acidfox.kopringbootauthapi.domain.jwt.exception.InvalidTokenException
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.beans.factory.annotation.Value
@@ -43,11 +46,18 @@ class JWTTokenService(
     }
 
     fun parseEmailFromJWTToken(token: String): String {
-        val claims = Jwts.parser()
-            .setSigningKey(jwtSecretKey)
-            .parseClaimsJws(token)
-            .body
 
-        return claims.subject
+        try {
+            val claims = Jwts.parser()
+                .setSigningKey(jwtSecretKey)
+                .parseClaimsJws(token)
+                .body
+
+            return claims.subject
+        } catch (_: ExpiredJwtException) {
+            throw ExpiredTokenException("로그인이 만료되었습니다. 다시 로그인 해주세요")
+        } catch (_: Throwable) {
+            throw InvalidTokenException("유효하지 않은 로그인 토큰입니다. 다시 로그인 해주세요")
+        }
     }
 }
