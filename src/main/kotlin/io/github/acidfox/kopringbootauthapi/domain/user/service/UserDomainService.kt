@@ -29,4 +29,6 @@ class UserDomainService(
 
         return userRepository.save(user)
     }
+
+    fun existsByPhoneNumber(phoneNumber: String) = userRepository.existsByPhoneNumber(phoneNumber)
 }

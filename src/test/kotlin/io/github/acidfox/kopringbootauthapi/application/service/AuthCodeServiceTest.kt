@@ -7,6 +7,7 @@ import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDoma
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.dto.SMSMessageDto
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.enum.SMSMessageType
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.factory.SMSMessageFactory
+import io.github.acidfox.kopringbootauthapi.domain.user.service.UserDomainService
 import io.github.acidfox.kopringbootauthapi.infrastructure.external.sms.SMSClient
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -22,6 +23,8 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
     lateinit var smsMessageFactory: SMSMessageFactory
     @RelaxedMockK
     lateinit var smsClient: SMSClient
+    @RelaxedMockK
+    lateinit var userDomainService: UserDomainService
     @InjectMockKs
     lateinit var authCodeService: AuthCodeService
 
@@ -38,6 +41,8 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
         every {
             smsMessageFactory.get(SMSMessageType.SIGN_UP_REQUEST_AUTH_CODE, phoneNumber, any())
         } returns mockMessageDto
+        every { userDomainService.existsByPhoneNumber(phoneNumber) } returns false
+        every { authCodeDomainService.checkCanIssueAuthCode(false, AuthCodeType.SIGN_UP) } returns true
 
         // When
         authCodeService.issue(phoneNumber, authCodeType)
@@ -60,6 +65,7 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
         val phoneNumber = "01012341234"
         val authCodeType = AuthCodeType.SIGN_UP
         val code = "123123"
+
         // When
         authCodeService.validate(phoneNumber, authCodeType, code)
 
