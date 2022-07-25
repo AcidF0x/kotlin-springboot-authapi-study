@@ -2,6 +2,7 @@ package io.github.acidfox.kopringbootauthapi.domain.authcode.service
 
 import io.github.acidfox.kopringbootauthapi.BaseTestCase
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
+import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.CanNotIssuedAuthCodeException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.InvalidAuthCodeException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.NotValidatedAuthCodeException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.TooManyAuthCodeRequestException
@@ -467,5 +468,64 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
 
         // Then
         verify(exactly = 1) { authCodeRepository.deleteByPhoneNumberAndAuthCodeType(phoneNumber, authCodeType) }
+    }
+
+    @Test
+    @DisplayName("인증 코드 발급 가능 여부 판단 - 회원 가입시 이미 가입된 휴대전화 번호는 불가능")
+    fun testCheckCanIssueAuthCodeSignupThrowWhenAlreadySignedup() {
+        // Given
+        val isUserExists = true
+
+        // When && Then
+        Assertions.assertThrows(
+            CanNotIssuedAuthCodeException::class.java,
+            {
+                authCodeDomainService.checkCanIssueAuthCode(isUserExists, AuthCodeType.SIGN_UP)
+            },
+            "이미 가입된 사용자 입니다"
+        )
+    }
+
+    @Test
+    @DisplayName("인증 코드 발급 가능 여부 판단 - 비밀 번호 변경시 가입된 휴대전화 번호가 없으면 불가능")
+    fun testCheckCanIssueAuthCodePasswordResetThrowWhenPhoneNumberNotFound() {
+        // Given
+        val isUserExists = false
+
+        // When && Then
+        Assertions.assertThrows(
+            CanNotIssuedAuthCodeException::class.java,
+            {
+                authCodeDomainService.checkCanIssueAuthCode(isUserExists, AuthCodeType.RESET_PASSWORD)
+            },
+            "회원 정보를 찾을 수 없습니다"
+        )
+    }
+
+    @Test
+    @DisplayName("인증 코드 발급 가능 여부 판단 - 회원 가입시 미 가입된 휴대전화 번호는 가능")
+    fun testCheckCanIssueAuthCodeSignup() {
+        // Given
+        val isUserExists = false
+
+        // When
+        val result = authCodeDomainService.checkCanIssueAuthCode(isUserExists, AuthCodeType.SIGN_UP)
+
+        // Then
+        Assertions.assertTrue(result)
+    }
+
+
+    @Test
+    @DisplayName("인증 코드 발급 가능 여부 판단 - 비밀번호 초기화시 가입된 휴대전화번호는 가능")
+    fun testCheckCanIssueAuthCodePasswordReset() {
+        // Given
+        val isUserExists = true
+
+        // When
+        val result = authCodeDomainService.checkCanIssueAuthCode(isUserExists, AuthCodeType.RESET_PASSWORD)
+
+        // Then
+        Assertions.assertTrue(result)
     }
 }

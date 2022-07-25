@@ -1,6 +1,7 @@
 package io.github.acidfox.kopringbootauthapi.domain.authcode.service
 
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
+import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.CanNotIssuedAuthCodeException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.InvalidAuthCodeException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.NotValidatedAuthCodeException
 import io.github.acidfox.kopringbootauthapi.domain.authcode.exception.TooManyAuthCodeRequestException
@@ -22,6 +23,16 @@ class AuthCodeDomainService(
     var authCodeTTL: Int = 3
     @Value("\${config.auth.auth-code-validated-live-time-minute}")
     var authCodeValidatedLifeTime: Int = 30
+
+    fun checkCanIssueAuthCode(isUserExists: Boolean, authCodeType: AuthCodeType): Boolean {
+        when (authCodeType) {
+            AuthCodeType.SIGN_UP ->
+                if (isUserExists) throw CanNotIssuedAuthCodeException("이미 가입된 사용자 입니다")
+            AuthCodeType.RESET_PASSWORD ->
+                if (!isUserExists) throw CanNotIssuedAuthCodeException("회원 정보를 찾을 수 없습니다")
+        }
+        return true
+    }
 
     fun issue(phoneNumber: String, authCodeType: AuthCodeType): AuthCode {
         val now: LocalDateTime = LocalDateTime.now()
