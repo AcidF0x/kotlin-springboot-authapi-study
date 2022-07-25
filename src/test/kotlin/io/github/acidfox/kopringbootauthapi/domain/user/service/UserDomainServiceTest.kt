@@ -188,8 +188,7 @@ internal class UserDomainServiceTest : BaseTestCase() {
 
     @Test
     @DisplayName("이메일로 사용자를 검색 할 수 있다")
-    fun testFindByEmail()
-    {
+    fun testFindByEmail() {
         // Given
         val email = "mail@mail.com"
 
@@ -207,6 +206,6 @@ internal class UserDomainServiceTest : BaseTestCase() {
         userDomainService.findByEmail(email)
 
         // Then
-        verify(exactly = 1){ userRepository.findByEmail(email) }
+        verify(exactly = 1) { userRepository.findByEmail(email) }
     }
 }

@@ -58,7 +58,6 @@ internal class JWTTokenServiceTest {
         Assertions.assertTrue(result.isBlank())
     }
 
-
     @Test
     @DisplayName("토큰에서 이메일을 가져 올 수 있다")
     fun testParseEmailFromJWTToken() {
