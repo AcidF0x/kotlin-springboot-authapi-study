@@ -31,4 +31,45 @@ internal class JWTTokenServiceTest {
 
         Assertions.assertEquals(email, token.subject)
     }
+
+    @Test
+    @DisplayName("Bearer가 포함된 문자열에서 토큰만 분리 할 수 있다")
+    fun testParseJWTTokenFromHeader() {
+        // Given
+        val token = "wow_this_is_token_wow"
+
+        // When
+        val result = jwtTokenService.parseJWTTokenFromHeader("Bearer $token")
+
+        // Then
+        Assertions.assertEquals(token, result)
+    }
+
+    @Test
+    @DisplayName("Bearer가 포함된 문자열이 아니면 빈 String을 리턴한다")
+    fun testParseJWTTokenFromHeaderReturnEmptyStringWhenInvalidParams() {
+        // Given
+        val token = "wow_this_is_token_wow"
+
+        // When
+        val result = jwtTokenService.parseJWTTokenFromHeader(token)
+
+        // Then
+        Assertions.assertTrue(result.isBlank())
+    }
+
+
+    @Test
+    @DisplayName("토큰에서 이메일을 가져 올 수 있다")
+    fun testParseEmailFromJWTToken() {
+        // Given
+        val email = "mail@test.com"
+        val token = jwtTokenService.createJWTToken(email)
+
+        // When
+        val result = jwtTokenService.parseEmailFromJWTToken(token)
+
+        // Then
+        Assertions.assertEquals(email, result)
+    }
 }
