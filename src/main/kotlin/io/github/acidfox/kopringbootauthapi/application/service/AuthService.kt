@@ -2,6 +2,7 @@ package io.github.acidfox.kopringbootauthapi.application.service
 
 import io.github.acidfox.kopringbootauthapi.application.request.LoginRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
+import io.github.acidfox.kopringbootauthapi.application.response.LoginResponse
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDomainService
 import io.github.acidfox.kopringbootauthapi.domain.jwt.service.JWTTokenService
@@ -25,13 +26,13 @@ class AuthService(
     }
 
     @Transactional
-    fun login(requestDto: LoginRequest): String {
+    fun login(requestDto: LoginRequest): LoginResponse {
         val isUserExists = userDomainService.existsByEmailAndPassword(requestDto.email, requestDto.password)
 
         if (!isUserExists) {
             throw UserNotFoundException("사용자를 찾을 수 없습니다, 이메일 또는 비밀번호를 확인 해 주세요")
         }
 
-        return jwtTokenService.createJWTToken(requestDto.email)
+        return LoginResponse(jwtTokenService.createJWTToken(requestDto.email))
     }
 }

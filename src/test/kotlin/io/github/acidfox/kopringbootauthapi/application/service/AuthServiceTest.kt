@@ -79,10 +79,10 @@ internal class AuthServiceTest : BaseTestCase() {
         every { jwtTokenService.createJWTToken(request.email) } returns mockJWTToken
 
         // When
-        val token = authService.login(request)
+        val response = authService.login(request)
 
         // Then
-        Assertions.assertSame(mockJWTToken, token)
+        Assertions.assertSame(mockJWTToken, response.token)
     }
 
     @Test
