@@ -4,6 +4,9 @@ config:
     auth-code-issue-limit-per-day: 10
     auth-code-time-to-live-minute: 3
     auth-code-validated-live-time-minute: 30
+    jwt:
+      token-life-time-seconds: 2592000
+      token-secret-key: "jwt_token_secret_key"
   sms:
     driver: file
 
