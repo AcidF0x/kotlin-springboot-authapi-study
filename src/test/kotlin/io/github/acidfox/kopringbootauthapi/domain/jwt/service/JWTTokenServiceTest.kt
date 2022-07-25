@@ -15,13 +15,13 @@ internal class JWTTokenServiceTest {
     lateinit var jwtTokenService: JWTTokenService
 
     @Test
-    @DisplayName("휴대전화 번호로 JWT 토큰을 발급 받을 수 있다")
+    @DisplayName("이메일로 JWT 토큰을 발급 받을 수 있다")
     fun testCreateJWTToken() {
         // Given
-        val phoneNumber = "01012341234"
+        val email = "mail@test.com"
 
         // When
-        val result = jwtTokenService.createJWTToken(phoneNumber)
+        val result = jwtTokenService.createJWTToken(email)
 
         // Then
         val token = Jwts.parser()
@@ -29,6 +29,6 @@ internal class JWTTokenServiceTest {
             .parseClaimsJws(result)
             .body
 
-        Assertions.assertEquals(phoneNumber, token.subject)
+        Assertions.assertEquals(email, token.subject)
     }
 }
