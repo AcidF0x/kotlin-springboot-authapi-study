@@ -38,6 +38,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("io.jsonwebtoken:jjwt:0.9.1")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
@@ -45,7 +46,6 @@ dependencies {
     testImplementation("com.h2database:h2:2.1.210")
     testImplementation("io.mockk:mockk:1.12.4")
     testImplementation("com.ninja-squad:springmockk:3.1.1")
-    testImplementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
 }
 
 tasks.withType<KotlinCompile> {
