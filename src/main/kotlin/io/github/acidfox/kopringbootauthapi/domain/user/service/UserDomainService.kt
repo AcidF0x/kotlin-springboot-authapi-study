@@ -31,4 +31,14 @@ class UserDomainService(
     }
 
     fun existsByPhoneNumber(phoneNumber: String) = userRepository.existsByPhoneNumber(phoneNumber)
+
+    fun existsByEmailAndPassword(email: String, password: String): Boolean {
+        val user = userRepository.findByEmail(email)
+
+        if (user === null || !passwordEncoder.matches(password, user.password)) {
+            return false
+        }
+
+        return true
+    }
 }

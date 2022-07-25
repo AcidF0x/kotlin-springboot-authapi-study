@@ -121,4 +121,68 @@ internal class UserDomainServiceTest : BaseTestCase() {
         // Then
         Assertions.assertTrue(result)
     }
+
+    @Test
+    @DisplayName("회원 정보 인증 - 이메일과 패스워드가 일치하는 사용자가 있는지 확인 할 수 있다")
+    fun testExistsByEmailAndPasswordMatched() {
+        // Given
+        val email = "mail@mail.com"
+        val password = "111112222233"
+        val mockUser = User(
+            email,
+            "nickname",
+            "password",
+            "name",
+            "01011112222"
+        )
+
+        every { userRepository.findByEmail(email) } returns mockUser
+        every { passwordEncoder.matches(password, mockUser.password) } returns true
+
+        // When
+        val result = userDomainService.existsByEmailAndPassword(email, password)
+
+        // Then
+        Assertions.assertTrue(result)
+    }
+
+    @Test
+    @DisplayName("회원 정보 인증 - 이메일이 일치하는 사용자가 있더라도 패스워드가 일치하지 않으면 false를 리턴한다")
+    fun testExistsByEmailAndPasswordReturnFalseWhenPasswordNotMatched() {
+        // Given
+        val email = "mail@mail.com"
+        val password = "111112222233"
+        val mockUser = User(
+            email,
+            "nickname",
+            "password",
+            "name",
+            "01011112222"
+        )
+
+        every { userRepository.findByEmail(email) } returns mockUser
+        every { passwordEncoder.matches(password, mockUser.password) } returns false
+
+        // When
+        val result = userDomainService.existsByEmailAndPassword(email, password)
+
+        // Then
+        Assertions.assertFalse(result)
+    }
+
+    @Test
+    @DisplayName("회원 정보 인증 - 이메일이 일치하는 사용자 없으면 false를 리턴한다")
+    fun testExistsByEmailAndPasswordReturnFalseWhenEmailNotFound() {
+        // Given
+        val email = "mail@mail.com"
+        val password = "111112222233"
+        every { userRepository.findByEmail(email) } returns null
+
+        // When
+        val result = userDomainService.existsByEmailAndPassword(email, password)
+
+        // Then
+        verify { passwordEncoder wasNot called }
+        Assertions.assertFalse(result)
+    }
 }
