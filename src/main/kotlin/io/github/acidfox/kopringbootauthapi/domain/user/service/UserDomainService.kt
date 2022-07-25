@@ -4,6 +4,8 @@ import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
 import io.github.acidfox.kopringbootauthapi.domain.user.exception.CannotSignupException
 import io.github.acidfox.kopringbootauthapi.domain.user.model.User
 import io.github.acidfox.kopringbootauthapi.domain.user.repository.UserRepository
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -11,7 +13,7 @@ import org.springframework.stereotype.Service
 class UserDomainService(
     private val passwordEncoder: PasswordEncoder,
     private val userRepository: UserRepository,
-) {
+) : UserDetailsService {
     fun signUp(request: SignUpRequest): User {
         val exists = userRepository.existsByEmailEqualsOrPhoneNumberEquals(request.email, request.phoneNumber)
 
@@ -43,4 +45,5 @@ class UserDomainService(
     }
 
     fun findByEmail(email: String) = userRepository.findByEmail(email)
+    override fun loadUserByUsername(username: String): UserDetails? = findByEmail(username)
 }
