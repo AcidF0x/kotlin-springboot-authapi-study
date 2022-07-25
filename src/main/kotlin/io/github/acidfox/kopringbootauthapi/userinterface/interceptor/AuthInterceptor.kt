@@ -1,7 +1,7 @@
 package io.github.acidfox.kopringbootauthapi.userinterface.interceptor
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.acidfox.kopringbootauthapi.application.response.ErrorResponse
+import io.github.acidfox.kopringbootauthapi.infrastructure.helper.extension.send
 import io.github.acidfox.kopringbootauthapi.userinterface.aop.NotLoginOnly
 import org.springframework.http.HttpStatus
 import org.springframework.web.method.HandlerMethod
@@ -19,14 +19,7 @@ class AuthInterceptor : HandlerInterceptor {
         val isNotLoginMethod = handlerMethod.hasMethodAnnotation(NotLoginOnly::class.java)
         val hasAuthHeader = request.getHeader("Authorization") !== null
         if (isNotLoginMethod && hasAuthHeader) {
-            val errorResponse = ErrorResponse(900, "로그인 상태에서는 요청 할 수 없습니다")
-            val json = ObjectMapper().writeValueAsString(errorResponse)
-            response.status = HttpStatus.BAD_REQUEST.value()
-            response.contentType = "application/json;charset=UTF-8"
-            response.writer.write(json)
-            response.writer.flush()
-            response.writer.close()
-
+            response.send(ErrorResponse(900, "로그인 상태에서는 요청 할 수 없습니다"), HttpStatus.BAD_REQUEST)
             return false
         }
 
