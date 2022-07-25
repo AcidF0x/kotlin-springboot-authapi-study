@@ -33,4 +33,21 @@ class JWTTokenService(
             .signWith(SignatureAlgorithm.HS256, jwtSecretKey)
             .compact()
     }
+
+    fun parseJWTTokenFromHeader(header: String): String {
+        if (header.isNotBlank() && header.startsWith("Bearer ")) {
+            return header.split(' ')[1]
+        }
+
+        return ""
+    }
+
+    fun parseEmailFromJWTToken(token: String): String {
+        val claims = Jwts.parser()
+            .setSigningKey(jwtSecretKey)
+            .parseClaimsJws(token)
+            .body
+
+        return claims.subject
+    }
 }

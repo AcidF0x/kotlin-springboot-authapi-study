@@ -185,4 +185,27 @@ internal class UserDomainServiceTest : BaseTestCase() {
         verify { passwordEncoder wasNot called }
         Assertions.assertFalse(result)
     }
+
+    @Test
+    @DisplayName("이메일로 사용자를 검색 할 수 있다")
+    fun testFindByEmail() {
+        // Given
+        val email = "mail@mail.com"
+
+        val mockUser = User(
+            email,
+            "nickname",
+            "password",
+            "name",
+            "01011112222"
+        )
+
+        every { userRepository.findByEmail(email) } returns mockUser
+
+        // When
+        userDomainService.findByEmail(email)
+
+        // Then
+        verify(exactly = 1) { userRepository.findByEmail(email) }
+    }
 }
