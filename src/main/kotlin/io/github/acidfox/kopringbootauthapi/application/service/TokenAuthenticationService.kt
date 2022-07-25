@@ -1,10 +1,10 @@
 package io.github.acidfox.kopringbootauthapi.application.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.acidfox.kopringbootauthapi.application.response.ErrorResponse
 import io.github.acidfox.kopringbootauthapi.domain.jwt.service.JWTTokenService
 import io.github.acidfox.kopringbootauthapi.domain.user.service.UserDomainService
 import io.github.acidfox.kopringbootauthapi.infrastructure.error.CustomException
+import io.github.acidfox.kopringbootauthapi.infrastructure.helper.extension.send
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.AuthenticationException
@@ -46,13 +46,7 @@ class TokenAuthenticationService(
                 )
             }
         } catch (e: CustomException) {
-            val errorResponse = ErrorResponse(e.code, e.message)
-            val json = ObjectMapper().writeValueAsString(errorResponse)
-            response.status = e.httpStatus.value()
-            response.contentType = "application/json;charset=UTF-8"
-            response.writer.write(json)
-            response.writer.flush()
-            response.writer.close()
+            response.send(e)
         }
 
         filterChain.doFilter(request, response)
@@ -63,12 +57,6 @@ class TokenAuthenticationService(
         response: HttpServletResponse,
         authException: AuthenticationException
     ) {
-        val errorResponse = ErrorResponse(400, "로그인이 필요합니다.")
-        val json = ObjectMapper().writeValueAsString(errorResponse)
-        response.status = HttpStatus.UNAUTHORIZED.value()
-        response.contentType = "application/json;charset=UTF-8"
-        response.writer.write(json)
-        response.writer.flush()
-        response.writer.close()
+        response.send(ErrorResponse(400, "로그인이 필요합니다."), HttpStatus.UNAUTHORIZED)
     }
 }
