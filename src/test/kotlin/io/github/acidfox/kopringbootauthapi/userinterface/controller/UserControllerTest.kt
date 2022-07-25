@@ -16,8 +16,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-internal class UserControllerTest: BaseControllerTestCase()
-{
+internal class UserControllerTest : BaseControllerTestCase() {
     @Autowired
     lateinit var mvc: MockMvc
 
@@ -30,7 +29,7 @@ internal class UserControllerTest: BaseControllerTestCase()
             "password",
             "string",
             "name",
-                "01011112222"
+            "01011112222"
         )
         user.createdAt = LocalDateTime.now()
 
