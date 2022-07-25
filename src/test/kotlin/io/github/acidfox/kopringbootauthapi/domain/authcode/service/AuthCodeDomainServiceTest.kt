@@ -515,7 +515,6 @@ internal class AuthCodeDomainServiceTest() : BaseTestCase() {
         Assertions.assertTrue(result)
     }
 
-
     @Test
     @DisplayName("인증 코드 발급 가능 여부 판단 - 비밀번호 초기화시 가입된 휴대전화번호는 가능")
     fun testCheckCanIssueAuthCodePasswordReset() {

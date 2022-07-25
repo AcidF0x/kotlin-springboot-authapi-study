@@ -110,8 +110,7 @@ internal class UserDomainServiceTest : BaseTestCase() {
 
     @Test
     @DisplayName("휴대 전화 번호로 가입된 사용자인지 확인 할 수 있다")
-    fun testExistsByPhoneNumber()
-    {
+    fun testExistsByPhoneNumber() {
         // Given
         val phoneNumber = "01011112222"
         every { userRepository.existsByPhoneNumber(phoneNumber) } returns true

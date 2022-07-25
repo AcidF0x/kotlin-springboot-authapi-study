@@ -11,7 +11,6 @@ import io.github.acidfox.kopringbootauthapi.domain.user.service.UserDomainServic
 import io.github.acidfox.kopringbootauthapi.infrastructure.external.sms.SMSClient
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
-import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.verify
 import org.junit.jupiter.api.Test
@@ -43,7 +42,7 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
             smsMessageFactory.get(SMSMessageType.SIGN_UP_REQUEST_AUTH_CODE, phoneNumber, any())
         } returns mockMessageDto
         every { userDomainService.existsByPhoneNumber(phoneNumber) } returns false
-        every { authCodeDomainService.checkCanIssueAuthCode(false, AuthCodeType.SIGN_UP)} returns true
+        every { authCodeDomainService.checkCanIssueAuthCode(false, AuthCodeType.SIGN_UP) } returns true
 
         // When
         authCodeService.issue(phoneNumber, authCodeType)
