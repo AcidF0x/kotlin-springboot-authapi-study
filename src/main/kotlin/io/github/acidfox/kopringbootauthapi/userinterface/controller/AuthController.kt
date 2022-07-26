@@ -66,7 +66,7 @@ class AuthController(
         return authService.login(request)
     }
 
-    @PostMapping("/reset-password")
+    @PostMapping("/password-reset")
     @NotLoginOnly
     fun passwordChange(@RequestBody @Validated request: PasswordChangeRequest): String {
         authService.passwordChanged(request)
