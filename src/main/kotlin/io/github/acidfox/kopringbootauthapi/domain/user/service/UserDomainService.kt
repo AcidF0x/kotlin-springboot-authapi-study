@@ -50,8 +50,8 @@ class UserDomainService(
     }
 
     fun existsByPhoneNumber(phoneNumber: String) = userRepository.existsByPhoneNumber(phoneNumber)
-    fun existsByEmailAndPhoneNumber(phoneNumber: String, email: String) =
-        userRepository.existsByEmailAndPhoneNumber(phoneNumber, email)
+    fun existsByEmailAndPhoneNumber(email: String, phoneNumber: String) =
+        userRepository.existsByEmailAndPhoneNumber(email, phoneNumber)
     fun findByEmail(email: String) = userRepository.findByEmail(email)
     fun findByEmailAndPhoneNumber(email: String, phoneNumber: String) =
         userRepository.findByEmailAndPhoneNumber(email, phoneNumber)
