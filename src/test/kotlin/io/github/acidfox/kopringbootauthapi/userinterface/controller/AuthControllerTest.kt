@@ -9,6 +9,7 @@ import io.github.acidfox.kopringbootauthapi.application.request.PasswordChangeRe
 import io.github.acidfox.kopringbootauthapi.application.request.PasswordResetAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
+import io.github.acidfox.kopringbootauthapi.application.response.AuthCodeIssuedResponse
 import io.github.acidfox.kopringbootauthapi.application.response.LoginResponse
 import io.github.acidfox.kopringbootauthapi.application.service.AuthCodeService
 import io.github.acidfox.kopringbootauthapi.application.service.AuthService
@@ -47,8 +48,9 @@ internal class AuthControllerTest : BaseControllerTestCase() {
         val url = "/api/auth/auth-code/signup"
         val requestDto = SignUpAuthCodeIssueRequest("01011112222")
         val json = mapper.writeValueAsString(requestDto)
+        val mockResponse = AuthCodeIssuedResponse(123)
 
-        every { authCodeService.issueSignupAuthCode(requestDto.phoneNumber) } just runs
+        every { authCodeService.issueSignupAuthCode(requestDto.phoneNumber) } returns mockResponse
 
         // When
         val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
@@ -56,6 +58,7 @@ internal class AuthControllerTest : BaseControllerTestCase() {
         // Then
         verify(exactly = 1) { authCodeService.issueSignupAuthCode(requestDto.phoneNumber) }
         result.andExpect(status().isOk)
+            .andExpect(jsonPath("$.expired_in").value(mockResponse.expiredIn))
     }
 
     @Test
@@ -65,8 +68,11 @@ internal class AuthControllerTest : BaseControllerTestCase() {
         val url = "/api/auth/auth-code/password-reset"
         val requestDto = PasswordResetAuthCodeIssueRequest("01011112222", "email@email.com")
         val json = mapper.writeValueAsString(requestDto)
+        val mockResponse = AuthCodeIssuedResponse(123)
 
-        every { authCodeService.issuePasswordResetAuthCode(requestDto.phoneNumber, requestDto.email) } just runs
+        every {
+            authCodeService.issuePasswordResetAuthCode(requestDto.phoneNumber, requestDto.email)
+        } returns mockResponse
 
         // When
         val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
@@ -74,6 +80,7 @@ internal class AuthControllerTest : BaseControllerTestCase() {
         // Then
         verify(exactly = 1) { authCodeService.issuePasswordResetAuthCode(requestDto.phoneNumber, requestDto.email) }
         result.andExpect(status().isOk)
+            .andExpect(jsonPath("$.expired_in").value(mockResponse.expiredIn))
     }
 
     @Test
