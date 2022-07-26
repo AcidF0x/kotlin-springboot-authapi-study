@@ -132,14 +132,13 @@ internal class AuthServiceTest : BaseTestCase() {
         every { userDomainService.findByEmailAndPhoneNumber(request.email, request.phoneNumber) } returns mockUser
         every { authCodeDomainService.verifyValidation(request.phoneNumber, AuthCodeType.RESET_PASSWORD) } returns true
         every { userDomainService.changePassword(mockUser, request.password) } just runs
+        every { authCodeDomainService.delete(request.phoneNumber, AuthCodeType.RESET_PASSWORD) } just runs
 
         // When
         authService.passwordChanged(request)
 
         // Then
-        verify(exactly = 1) {
-            userDomainService.changePassword(mockUser, request.password)
-        }
+        verify(exactly = 1) { userDomainService.changePassword(mockUser, request.password) }
     }
 
     @Test
@@ -160,5 +159,6 @@ internal class AuthServiceTest : BaseTestCase() {
 
         verify(exactly = 0) { userDomainService.changePassword(any(), any()) }
         verify(exactly = 0) { authCodeDomainService.verifyValidation(any(), any()) }
+        verify(exactly = 0) { authCodeDomainService.delete(any(), any()) }
     }
 }

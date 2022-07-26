@@ -47,5 +47,6 @@ class AuthService(
 
         authCodeDomainService.verifyValidation(requestDto.phoneNumber, AuthCodeType.RESET_PASSWORD)
         userDomainService.changePassword(user, requestDto.password)
+        authCodeDomainService.delete(requestDto.phoneNumber, AuthCodeType.RESET_PASSWORD)
     }
 }
