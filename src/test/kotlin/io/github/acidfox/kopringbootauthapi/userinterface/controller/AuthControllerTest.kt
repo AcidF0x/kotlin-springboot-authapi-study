@@ -3,10 +3,10 @@ package io.github.acidfox.kopringbootauthapi.userinterface.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.github.acidfox.kopringbootauthapi.BaseControllerTestCase
+import io.github.acidfox.kopringbootauthapi.application.request.AuthCodeValidateRequest
 import io.github.acidfox.kopringbootauthapi.application.request.LoginRequest
 import io.github.acidfox.kopringbootauthapi.application.request.PasswordResetAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
-import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeValidateRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
 import io.github.acidfox.kopringbootauthapi.application.response.LoginResponse
 import io.github.acidfox.kopringbootauthapi.application.service.AuthCodeService
@@ -136,7 +136,7 @@ internal class AuthControllerTest : BaseControllerTestCase() {
     fun testValidateSignupAuthCode() {
         // Given
         val url = "/api/auth/auth-code/signup/validate"
-        val requestDto = SignUpAuthCodeValidateRequest("01011112222", "123123")
+        val requestDto = AuthCodeValidateRequest("01011112222", "123123")
         val json = mapper.writeValueAsString(requestDto)
         every { authCodeService.validate(requestDto.phoneNumber, AuthCodeType.SIGN_UP, requestDto.code) } returns true
 
@@ -151,39 +151,100 @@ internal class AuthControllerTest : BaseControllerTestCase() {
     }
 
     @Test
-    @DisplayName("올바르지 않은 휴대 전화 번호는 회원 가입 인증 코드를 검증 할 수 없다")
-    fun testValidateExceptionWhenInvalidPhoneNumber() {
+    @DisplayName("올바르지 않은 요청으로는 회원 가입 인증 코드를 검증 할 수 없다")
+    fun testSignupAutCodeValidateExceptionWhenInvalidParams() {
         // Given
         val url = "/api/auth/auth-code/signup/validate"
-        val requestDto = SignUpAuthCodeValidateRequest("02-119-119", "123123")
-        val json = mapper.writeValueAsString(requestDto)
+        val requestDto = AuthCodeValidateRequest("01011112222", "123123")
 
-        // When
-        val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+        // fieldName, changed value, expectedMessage
+        val testCase = listOf(
+            Triple("code", "", "코드를 입력해주세요"),
+            Triple("phoneNumber", "00012341234", "휴대전화 번호를 확인해주세요"),
+            Triple("phoneNumber", "", "휴대전화 번호를 확인해주세요"),
+        )
 
-        // Then
-        verify { authCodeService wasNot Called }
-        result.andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.code").value("-1"))
-            .andExpect(jsonPath("$.message").value("휴대전화 번호를 확인해주세요"))
+        for (i in testCase) {
+            var oldValue: String
+            val property = requestDto.javaClass.getDeclaredField(i.first)
+
+            property.isAccessible = true
+            oldValue = property.get(requestDto) as String
+            property.set(requestDto, i.second)
+
+            val json = mapper.writeValueAsString(requestDto)
+
+            // When
+            val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+
+            // Then
+            verify { authService wasNot Called }
+            result.andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.code").value("-1"))
+                .andExpect(jsonPath("$.message").value(i.third))
+
+            property.set(requestDto, oldValue)
+            property.isAccessible = false
+        }
     }
 
     @Test
-    @DisplayName("인증코드 없이 회원 가입 인증 코드를 검증 할 수 없다")
-    fun testValidateExceptionWhenEmptyCode() {
+    @DisplayName("비밀번호 변경 인증 코드를 검증 할 수 있다")
+    fun testValidatePasswordResetAuthCode() {
         // Given
-        val url = "/api/auth/auth-code/signup/validate"
-        val requestDto = SignUpAuthCodeValidateRequest("01011112222", "")
+        val url = "/api/auth/auth-code/password-reset/validate"
+        val requestDto = AuthCodeValidateRequest("01011112222", "123123")
         val json = mapper.writeValueAsString(requestDto)
+        every {
+            authCodeService.validate(requestDto.phoneNumber, AuthCodeType.RESET_PASSWORD, requestDto.code)
+        } returns true
 
         // When
         val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
 
         // Then
-        verify { authCodeService wasNot Called }
-        result.andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.code").value("-1"))
-            .andExpect(jsonPath("$.message").value("코드를 입력해주세요"))
+        verify(exactly = 1) {
+            authCodeService.validate(requestDto.phoneNumber, AuthCodeType.RESET_PASSWORD, requestDto.code)
+        }
+        result.andExpect(status().isOk)
+    }
+
+    @Test
+    @DisplayName("올바르지 않은 요청으로는 비밀번호 변경 인증 코드를 검증 할 수 없다")
+    fun testPasswordResetAuthCodeValidateExceptionWhenInvalidParams() {
+        // Given
+        val url = "/api/auth/auth-code/password-reset/validate"
+        val requestDto = AuthCodeValidateRequest("01011112222", "123123")
+
+        // fieldName, changed value, expectedMessage
+        val testCase = listOf(
+            Triple("code", "", "코드를 입력해주세요"),
+            Triple("phoneNumber", "00012341234", "휴대전화 번호를 확인해주세요"),
+            Triple("phoneNumber", "", "휴대전화 번호를 확인해주세요"),
+        )
+
+        for (i in testCase) {
+            var oldValue: String
+            val property = requestDto.javaClass.getDeclaredField(i.first)
+
+            property.isAccessible = true
+            oldValue = property.get(requestDto) as String
+            property.set(requestDto, i.second)
+
+            val json = mapper.writeValueAsString(requestDto)
+
+            // When
+            val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+
+            // Then
+            verify { authService wasNot Called }
+            result.andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.code").value("-1"))
+                .andExpect(jsonPath("$.message").value(i.third))
+
+            property.set(requestDto, oldValue)
+            property.isAccessible = false
+        }
     }
 
     @Test

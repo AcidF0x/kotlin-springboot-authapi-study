@@ -1,9 +1,9 @@
 package io.github.acidfox.kopringbootauthapi.userinterface.controller
 
+import io.github.acidfox.kopringbootauthapi.application.request.AuthCodeValidateRequest
 import io.github.acidfox.kopringbootauthapi.application.request.LoginRequest
 import io.github.acidfox.kopringbootauthapi.application.request.PasswordResetAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
-import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeValidateRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
 import io.github.acidfox.kopringbootauthapi.application.response.LoginResponse
 import io.github.acidfox.kopringbootauthapi.application.service.AuthCodeService
@@ -33,7 +33,7 @@ class AuthController(
 
     @PostMapping("/auth-code/signup/validate")
     @NotLoginOnly
-    fun validateSignupAuthCode(@RequestBody @Validated request: SignUpAuthCodeValidateRequest): String {
+    fun validateSignupAuthCode(@RequestBody @Validated request: AuthCodeValidateRequest): String {
         authCodeService.validate(request.phoneNumber, AuthCodeType.SIGN_UP, request.code)
         return ResponseEntity.ok().body("").toString()
     }
@@ -42,6 +42,13 @@ class AuthController(
     @NotLoginOnly
     fun issuePasswordResetAuthCode(@RequestBody @Validated request: PasswordResetAuthCodeIssueRequest): String {
         authCodeService.issuePasswordResetAuthCode(request.phoneNumber, request.email)
+        return ResponseEntity.ok().body("").toString()
+    }
+
+    @PostMapping("/auth-code/password-reset/validate")
+    @NotLoginOnly
+    fun validatePasswordResetAuthCode(@RequestBody @Validated request: AuthCodeValidateRequest): String {
+        authCodeService.validate(request.phoneNumber, AuthCodeType.RESET_PASSWORD, request.code)
         return ResponseEntity.ok().body("").toString()
     }
 
