@@ -9,18 +9,16 @@ import javax.servlet.http.HttpServletResponse
 fun HttpServletResponse.send(response: ErrorResponse, statusCode: HttpStatus) {
     val json = ObjectMapper().writeValueAsString(response)
     this.status = statusCode.value()
-    this.contentType = "application/json;charset=UTF-8"
+    this.contentType = "application/json"
+    this.characterEncoding = "UTF-8"
     this.writer.write(json)
-    this.writer.flush()
-    this.writer.close()
 }
 
 fun HttpServletResponse.send(exception: CustomException) {
     val errorResponse = ErrorResponse(exception.code, exception.message)
     val json = ObjectMapper().writeValueAsString(errorResponse)
     this.status = exception.httpStatus.value()
-    this.contentType = "application/json;charset=UTF-8"
+    this.contentType = "application/json"
+    this.characterEncoding = "UTF-8"
     this.writer.write(json)
-    this.writer.flush()
-    this.writer.close()
 }

@@ -36,20 +36,20 @@ class TokenAuthenticationService(
 
         val token = jwtTokenService.parseJWTTokenFromHeader(header)
         try {
-            val email = jwtTokenService.parseEmailFromJWTToken(token)
-            val user = userDomainService.findByEmail(email)
+            val claims = jwtTokenService.parseClaimsFromJWTToken(token)
+            val user = userDomainService.findByEmail(claims.subject)
             if (user !== null) {
+                jwtTokenService.validatePasswordChanged(claims, user.passwordChangedAt)
                 SecurityContextHolder.getContext().authentication = UsernamePasswordAuthenticationToken(
                     user,
                     null,
                     null
                 )
             }
+            filterChain.doFilter(request, response)
         } catch (e: CustomException) {
             response.send(e)
         }
-
-        filterChain.doFilter(request, response)
     }
 
     override fun commence(
