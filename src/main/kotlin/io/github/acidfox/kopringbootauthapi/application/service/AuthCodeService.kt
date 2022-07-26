@@ -20,7 +20,7 @@ class AuthCodeService(
     fun issueSignupAuthCode(phoneNumber: String) {
         val isUserExists = userDomainService.existsByPhoneNumber(phoneNumber)
         authCodeDomainService.checkCanIssueAuthCode(isUserExists, AuthCodeType.SIGN_UP)
-        this.issue(phoneNumber, AuthCodeType.SIGN_UP)
+        issue(phoneNumber, AuthCodeType.SIGN_UP)
     }
 
     @Transactional
