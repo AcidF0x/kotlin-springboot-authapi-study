@@ -1,6 +1,7 @@
 package io.github.acidfox.kopringbootauthapi.application.service
 
 import io.github.acidfox.kopringbootauthapi.application.response.AuthCodeIssuedResponse
+import io.github.acidfox.kopringbootauthapi.application.response.AuthCodeValidateResponse
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDomainService
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.enum.SMSMessageType
@@ -48,6 +49,9 @@ class AuthCodeService(
         return AuthCodeIssuedResponse(authCodeDomainService.authCodeTTL * 60)
     }
 
-    fun validate(phoneNumber: String, authCodeType: AuthCodeType, code: String) =
+    fun validate(phoneNumber: String, authCodeType: AuthCodeType, code: String): AuthCodeValidateResponse {
         authCodeDomainService.validate(phoneNumber, authCodeType, code)
+
+        return AuthCodeValidateResponse(authCodeDomainService.authCodeValidatedLifeTime * 60)
+    }
 }
