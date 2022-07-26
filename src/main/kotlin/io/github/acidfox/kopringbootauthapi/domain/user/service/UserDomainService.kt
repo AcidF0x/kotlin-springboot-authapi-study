@@ -15,7 +15,7 @@ class UserDomainService(
     private val userRepository: UserRepository,
 ) : UserDetailsService {
     fun signUp(request: SignUpRequest): User {
-        val exists = userRepository.existsByEmailEqualsOrPhoneNumberEquals(request.email, request.phoneNumber)
+        val exists = userRepository.existsByEmailOrPhoneNumber(request.email, request.phoneNumber)
 
         if (exists) {
             throw CannotSignupException("이미 가입된 유저 입니다.")
