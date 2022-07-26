@@ -26,7 +26,7 @@ class AuthController(
     @NotLoginOnly
     fun issueSignUpAuthCode(@RequestBody @Validated request: SignUpAuthCodeIssueRequest): String {
         // TODO : 발급 시간과 유효 기간 리턴 해주도록 변경
-        authCodeService.issue(request.phoneNumber, AuthCodeType.SIGN_UP)
+        authCodeService.issueSignupAuthCode(request.phoneNumber)
         return ResponseEntity.ok().body("").toString()
     }
 

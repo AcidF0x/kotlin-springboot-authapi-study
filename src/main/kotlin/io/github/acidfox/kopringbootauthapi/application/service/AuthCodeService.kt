@@ -4,7 +4,6 @@ import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDomainService
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.enum.SMSMessageType
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.factory.SMSMessageFactory
-import io.github.acidfox.kopringbootauthapi.domain.user.exception.UserNotFoundException
 import io.github.acidfox.kopringbootauthapi.domain.user.service.UserDomainService
 import io.github.acidfox.kopringbootauthapi.infrastructure.external.sms.SMSClient
 import org.springframework.stereotype.Service
@@ -18,32 +17,32 @@ class AuthCodeService(
     private val smsClient: SMSClient
 ) {
     @Transactional
-    fun issue(phoneNumber: String, authCodeType: AuthCodeType) {
+    fun issueSignupAuthCode(phoneNumber: String) {
         val isUserExists = userDomainService.existsByPhoneNumber(phoneNumber)
+        authCodeDomainService.checkCanIssueAuthCode(isUserExists, AuthCodeType.SIGN_UP)
+        this.issue(phoneNumber, AuthCodeType.SIGN_UP)
+    }
 
-        authCodeDomainService.checkCanIssueAuthCode(isUserExists, authCodeType)
-        val authCode = authCodeDomainService.issue(phoneNumber, authCodeType)
+    @Transactional
+    fun issuePasswordResetAuthCode(phoneNumber: String, email: String) {
+        val isUserExists = userDomainService.existsByEmailAndPhoneNumber(phoneNumber, email)
+        authCodeDomainService.checkCanIssueAuthCode(isUserExists, AuthCodeType.RESET_PASSWORD)
+        issue(phoneNumber, AuthCodeType.RESET_PASSWORD)
+    }
+
+    private fun issue(phoneNumber: String, type: AuthCodeType) {
+        val authCode = authCodeDomainService.issue(phoneNumber, type)
         val messageParams = mapOf(
             Pair("code", authCode.code), Pair("ttl", authCodeDomainService.authCodeTTL.toString())
         )
 
-        val messageType = when (authCodeType) {
+        val messageType = when (type) {
             AuthCodeType.SIGN_UP -> SMSMessageType.SIGN_UP_REQUEST_AUTH_CODE
             AuthCodeType.RESET_PASSWORD -> SMSMessageType.PASSWORD_RESET_REQUEST_AUTH_CODE
         }
 
         val message = smsMessageFactory.get(messageType, phoneNumber, messageParams)
         smsClient.sendMessage(message)
-    }
-
-    fun issuePasswordResetAuthCode(phoneNumber: String, email: String) {
-        val isUserExists = userDomainService.existsByEmailAndPhoneNumber(phoneNumber, email)
-
-        if (!isUserExists) {
-            throw UserNotFoundException("사용자 정보를 찾을 수 없습니다, 휴대전화 번호 또는 이메일을 확인해주세요")
-        }
-
-        this.issue(phoneNumber, AuthCodeType.RESET_PASSWORD)
     }
 
     fun validate(phoneNumber: String, authCodeType: AuthCodeType, code: String) =
