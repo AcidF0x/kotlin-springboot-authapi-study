@@ -6,6 +6,7 @@ import io.github.acidfox.kopringbootauthapi.application.request.PasswordChangeRe
 import io.github.acidfox.kopringbootauthapi.application.request.PasswordResetAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
+import io.github.acidfox.kopringbootauthapi.application.response.AuthCodeIssuedResponse
 import io.github.acidfox.kopringbootauthapi.application.response.LoginResponse
 import io.github.acidfox.kopringbootauthapi.application.response.OkResponse
 import io.github.acidfox.kopringbootauthapi.application.service.AuthCodeService
@@ -26,10 +27,8 @@ class AuthController(
 ) {
     @PostMapping("/auth-code/signup")
     @NotLoginOnly
-    fun issueSignUpAuthCode(@RequestBody @Validated request: SignUpAuthCodeIssueRequest): OkResponse {
-        // TODO : 발급 시간과 유효 기간 리턴 해주도록 변경
-        authCodeService.issueSignupAuthCode(request.phoneNumber)
-        return OkResponse()
+    fun issueSignUpAuthCode(@RequestBody @Validated request: SignUpAuthCodeIssueRequest): AuthCodeIssuedResponse {
+        return authCodeService.issueSignupAuthCode(request.phoneNumber)
     }
 
     @PostMapping("/auth-code/signup/validate")
@@ -41,9 +40,10 @@ class AuthController(
 
     @PostMapping("/auth-code/password-reset")
     @NotLoginOnly
-    fun issuePasswordResetAuthCode(@RequestBody @Validated request: PasswordResetAuthCodeIssueRequest): OkResponse {
-        authCodeService.issuePasswordResetAuthCode(request.phoneNumber, request.email)
-        return OkResponse()
+    fun issuePasswordResetAuthCode(
+        @RequestBody @Validated request: PasswordResetAuthCodeIssueRequest
+    ): AuthCodeIssuedResponse {
+        return authCodeService.issuePasswordResetAuthCode(request.phoneNumber, request.email)
     }
 
     @PostMapping("/auth-code/password-reset/validate")
