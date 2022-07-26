@@ -9,7 +9,6 @@ import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDoma
 import io.github.acidfox.kopringbootauthapi.domain.jwt.service.JWTTokenService
 import io.github.acidfox.kopringbootauthapi.domain.user.exception.UserNotFoundException
 import io.github.acidfox.kopringbootauthapi.domain.user.service.UserDomainService
-import org.flywaydb.core.internal.configuration.ConfigUtils.PASSWORD
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

@@ -118,8 +118,7 @@ internal class AuthServiceTest : BaseTestCase() {
 
     @Test
     @DisplayName("비밀 번호를 변경 할 수 있다")
-    fun testPasswordChange()
-    {
+    fun testPasswordChange() {
         // Given
         val request = PasswordChangeRequest("email@email.com", "01012341234", "passpass")
         val mockUser = User(
@@ -138,15 +137,14 @@ internal class AuthServiceTest : BaseTestCase() {
         authService.passwordChanged(request)
 
         // Then
-        verify (exactly = 1) {
+        verify(exactly = 1) {
             userDomainService.changePassword(mockUser, request.password)
         }
     }
 
     @Test
     @DisplayName("비밀 번호를 변경 시 사용자를 찾을 수 없다면 Exception을 발생 시킨다")
-    fun testPasswordChangeThrowUserNotFound()
-    {
+    fun testPasswordChangeThrowUserNotFound() {
         // Given
         val request = PasswordChangeRequest("email@email.com", "01012341234", "passpass")
         every { userDomainService.findByEmailAndPhoneNumber(request.email, request.phoneNumber) } returns null
@@ -161,6 +159,6 @@ internal class AuthServiceTest : BaseTestCase() {
         )
 
         verify(exactly = 0) { userDomainService.changePassword(any(), any()) }
-        verify(exactly = 0) { authCodeDomainService.verifyValidation(any(), any())}
+        verify(exactly = 0) { authCodeDomainService.verifyValidation(any(), any()) }
     }
 }

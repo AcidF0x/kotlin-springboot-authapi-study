@@ -53,7 +53,7 @@ class UserDomainService(
     fun existsByEmailAndPhoneNumber(phoneNumber: String, email: String) =
         userRepository.existsByEmailAndPhoneNumber(phoneNumber, email)
     fun findByEmail(email: String) = userRepository.findByEmail(email)
-    fun findByEmailAndPhoneNumber(email: String, phoneNumber: String)
-        = userRepository.findByEmailAndPhoneNumber(email, phoneNumber)
+    fun findByEmailAndPhoneNumber(email: String, phoneNumber: String) =
+        userRepository.findByEmailAndPhoneNumber(email, phoneNumber)
     override fun loadUserByUsername(username: String): UserDetails? = findByEmail(username)
 }
