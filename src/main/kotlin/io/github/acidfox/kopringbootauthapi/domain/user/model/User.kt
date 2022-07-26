@@ -3,6 +3,7 @@ package io.github.acidfox.kopringbootauthapi.domain.user.model
 import io.github.acidfox.kopringbootauthapi.domain.model.BaseEntity
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
+import java.time.LocalDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
 
@@ -22,6 +23,8 @@ class User(
 
     @Column(nullable = false, unique = true)
     var phoneNumber: String,
+
+    var passwordChangedAt: LocalDateTime = LocalDateTime.now()
 ) : BaseEntity(), UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority>? {
         return null
