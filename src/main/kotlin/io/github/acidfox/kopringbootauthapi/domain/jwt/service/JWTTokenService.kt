@@ -25,14 +25,15 @@ class JWTTokenService(
         jwtSecretKey = Base64.getEncoder().encodeToString(jwtSecretKey.toByteArray())
     }
 
-    fun createJWTToken(email: String): String {
+    fun createJWTToken(email: String, passwordChangedAt: LocalDateTime?): String {
         val now = LocalDateTime.now()
         val claims = Jwts.claims().setSubject(email)
-
+        val id: String = if (passwordChangedAt === null) "" else Timestamp.valueOf(passwordChangedAt).toString()
         return Jwts.builder()
             .setClaims(claims)
             .setIssuedAt(Timestamp.valueOf(now))
             .setExpiration(Timestamp.valueOf(now.plusSeconds(jwtTokenLifeTime.toLong())))
+            .setId(id)
             .signWith(SignatureAlgorithm.HS256, jwtSecretKey)
             .compact()
     }

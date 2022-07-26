@@ -123,8 +123,10 @@ internal class UserDomainServiceTest : BaseTestCase() {
     }
 
     @Test
-    @DisplayName("회원 정보 인증 - 이메일과 패스워드가 일치하는 사용자가 있는지 확인 할 수 있다")
-    fun testExistsByEmailAndPasswordMatched() {
+    @DisplayName(
+        "이메일, 비밀번호로 회원 정보 검색 - 이메일과 패스워드가 일치하는 사용자가 있으면 해당 사용자를 리턴한다"
+    )
+    fun testFindByEmailAndPasswordMatched() {
         // Given
         val email = "mail@mail.com"
         val password = "111112222233"
@@ -140,15 +142,19 @@ internal class UserDomainServiceTest : BaseTestCase() {
         every { passwordEncoder.matches(password, mockUser.password) } returns true
 
         // When
-        val result = userDomainService.existsByEmailAndPassword(email, password)
+        val result = userDomainService.findByEmailAndPassword(email, password)
 
         // Then
-        Assertions.assertTrue(result)
+        Assertions.assertSame(result, mockUser)
     }
 
     @Test
-    @DisplayName("회원 정보 인증 - 이메일이 일치하는 사용자가 있더라도 패스워드가 일치하지 않으면 false를 리턴한다")
-    fun testExistsByEmailAndPasswordReturnFalseWhenPasswordNotMatched() {
+    @DisplayName(
+        """
+        이메일, 비밀번호로 회원 정보 검색이메일이 일치하는 사용자가 있더라도 패스워드가 일치하지 않으면 null을 리턴한다
+        """
+    )
+    fun testFindByEmailAndPasswordReturnFalseWhenPasswordNotMatched() {
         // Given
         val email = "mail@mail.com"
         val password = "111112222233"
@@ -164,26 +170,26 @@ internal class UserDomainServiceTest : BaseTestCase() {
         every { passwordEncoder.matches(password, mockUser.password) } returns false
 
         // When
-        val result = userDomainService.existsByEmailAndPassword(email, password)
+        val result = userDomainService.findByEmailAndPassword(email, password)
 
         // Then
-        Assertions.assertFalse(result)
+        Assertions.assertNull(result)
     }
 
     @Test
-    @DisplayName("회원 정보 인증 - 이메일이 일치하는 사용자 없으면 false를 리턴한다")
-    fun testExistsByEmailAndPasswordReturnFalseWhenEmailNotFound() {
+    @DisplayName("이메일, 비밀번호로 회원 정보 검색 - 이메일이 일치하는 사용자 없으면 null 리턴한다")
+    fun testFindByEmailAndPasswordReturnFalseWhenEmailNotFound() {
         // Given
         val email = "mail@mail.com"
         val password = "111112222233"
         every { userRepository.findByEmail(email) } returns null
 
         // When
-        val result = userDomainService.existsByEmailAndPassword(email, password)
+        val result = userDomainService.findByEmailAndPassword(email, password)
 
         // Then
         verify { passwordEncoder wasNot called }
-        Assertions.assertFalse(result)
+        Assertions.assertNull(result)
     }
 
     @Test
