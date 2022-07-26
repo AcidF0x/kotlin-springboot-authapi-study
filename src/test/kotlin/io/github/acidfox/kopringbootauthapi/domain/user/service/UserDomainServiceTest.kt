@@ -48,7 +48,7 @@ internal class UserDomainServiceTest : BaseTestCase() {
         )
 
         every {
-            userRepository.existsByEmailEqualsOrPhoneNumberEquals(requestDto.email, requestDto.phoneNumber)
+            userRepository.existsByEmailOrPhoneNumber(requestDto.email, requestDto.phoneNumber)
         } returns false
         every { passwordEncoder.encode(requestDto.password) } returns encodedPassword
         every {
@@ -94,7 +94,7 @@ internal class UserDomainServiceTest : BaseTestCase() {
         )
 
         every {
-            userRepository.existsByEmailEqualsOrPhoneNumberEquals(requestDto.email, requestDto.phoneNumber)
+            userRepository.existsByEmailOrPhoneNumber(requestDto.email, requestDto.phoneNumber)
         } returns true
 
         // When && Then
