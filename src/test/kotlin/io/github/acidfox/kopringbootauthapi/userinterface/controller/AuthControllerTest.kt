@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.github.acidfox.kopringbootauthapi.BaseControllerTestCase
 import io.github.acidfox.kopringbootauthapi.application.request.LoginRequest
+import io.github.acidfox.kopringbootauthapi.application.request.PasswordResetAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeValidateRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
@@ -54,6 +55,63 @@ internal class AuthControllerTest : BaseControllerTestCase() {
         // Then
         verify(exactly = 1) { authCodeService.issueSignupAuthCode(requestDto.phoneNumber) }
         result.andExpect(status().isOk)
+    }
+
+    @Test
+    @DisplayName("Post 요청으로 비밀 번호 변경 인증 코드 요청을 할 수 있다")
+    fun testIssuePasswordResetAuthCode() {
+        // Given
+        val url = "/api/auth/auth-code/password-reset"
+        val requestDto = PasswordResetAuthCodeIssueRequest("01011112222", "email@email.com")
+        val json = mapper.writeValueAsString(requestDto)
+
+        every { authCodeService.issuePasswordResetAuthCode(requestDto.phoneNumber, requestDto.email) } just runs
+
+        // When
+        val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+
+        // Then
+        verify(exactly = 1) { authCodeService.issuePasswordResetAuthCode(requestDto.phoneNumber, requestDto.email) }
+        result.andExpect(status().isOk)
+    }
+
+    @Test
+    @DisplayName("올바르지 않은 요청으로 비밀 번호 변경 인증 코드 요청을 할 수 없다")
+    fun testIssuePasswordResetAuthCodeExceoptionWhenInvalidParam() {
+        // Given
+        val url = "/api/auth/auth-code/password-reset"
+        val requestDto = PasswordResetAuthCodeIssueRequest("01011112222", "email@email.com")
+
+        // fieldName, changed value, expectedMessage
+        val testCase = listOf(
+            Triple("email", "", "이메일을 입력 해주세요"),
+            Triple("email", "not-completed-email@", "올바른 이메일이 아닙니다"),
+            Triple("phoneNumber", "00012341234", "휴대전화 번호를 확인해주세요"),
+            Triple("phoneNumber", "", "휴대전화 번호를 확인해주세요"),
+        )
+
+        for (i in testCase) {
+            var oldValue: String
+            val property = requestDto.javaClass.getDeclaredField(i.first)
+
+            property.isAccessible = true
+            oldValue = property.get(requestDto) as String
+            property.set(requestDto, i.second)
+
+            val json = mapper.writeValueAsString(requestDto)
+
+            // When
+            val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
+
+            // Then
+            verify { authCodeService wasNot Called }
+            result.andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.code").value("-1"))
+                .andExpect(jsonPath("$.message").value(i.third))
+
+            property.set(requestDto, oldValue)
+            property.isAccessible = false
+        }
     }
 
     @Test
