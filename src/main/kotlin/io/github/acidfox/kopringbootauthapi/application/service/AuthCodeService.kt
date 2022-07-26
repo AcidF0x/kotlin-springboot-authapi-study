@@ -1,5 +1,6 @@
 package io.github.acidfox.kopringbootauthapi.application.service
 
+import io.github.acidfox.kopringbootauthapi.application.response.TokenIssuedResponse
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDomainService
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.enum.SMSMessageType
@@ -17,20 +18,20 @@ class AuthCodeService(
     private val smsClient: SMSClient
 ) {
     @Transactional
-    fun issueSignupAuthCode(phoneNumber: String) {
+    fun issueSignupAuthCode(phoneNumber: String): TokenIssuedResponse {
         val isUserExists = userDomainService.existsByPhoneNumber(phoneNumber)
         authCodeDomainService.checkCanIssueAuthCode(isUserExists, AuthCodeType.SIGN_UP)
-        issue(phoneNumber, AuthCodeType.SIGN_UP)
+        return issue(phoneNumber, AuthCodeType.SIGN_UP)
     }
 
     @Transactional
-    fun issuePasswordResetAuthCode(phoneNumber: String, email: String) {
+    fun issuePasswordResetAuthCode(phoneNumber: String, email: String): TokenIssuedResponse {
         val isUserExists = userDomainService.existsByEmailAndPhoneNumber(email, phoneNumber)
         authCodeDomainService.checkCanIssueAuthCode(isUserExists, AuthCodeType.RESET_PASSWORD)
-        issue(phoneNumber, AuthCodeType.RESET_PASSWORD)
+        return issue(phoneNumber, AuthCodeType.RESET_PASSWORD)
     }
 
-    private fun issue(phoneNumber: String, type: AuthCodeType) {
+    private fun issue(phoneNumber: String, type: AuthCodeType): TokenIssuedResponse {
         val authCode = authCodeDomainService.issue(phoneNumber, type)
         val messageParams = mapOf(
             Pair("code", authCode.code), Pair("ttl", authCodeDomainService.authCodeTTL.toString())
@@ -43,6 +44,8 @@ class AuthCodeService(
 
         val message = smsMessageFactory.get(messageType, phoneNumber, messageParams)
         smsClient.sendMessage(message)
+
+        return TokenIssuedResponse(authCodeDomainService.authCodeTTL * 60)
     }
 
     fun validate(phoneNumber: String, authCodeType: AuthCodeType, code: String) =

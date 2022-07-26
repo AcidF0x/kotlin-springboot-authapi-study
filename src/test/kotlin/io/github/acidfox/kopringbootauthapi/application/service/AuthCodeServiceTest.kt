@@ -1,6 +1,7 @@
 package io.github.acidfox.kopringbootauthapi.application.service
 
 import io.github.acidfox.kopringbootauthapi.BaseTestCase
+import io.github.acidfox.kopringbootauthapi.application.response.TokenIssuedResponse
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.domain.authcode.model.AuthCode
 import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDomainService
@@ -14,6 +15,7 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.spyk
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
@@ -89,7 +91,7 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
 
     @Test
     @DisplayName("인증 코드 발급 로직 - 회원가입 인증 코드를 생성후 SMS 메세지를 발송 한다")
-    fun testIssueWithSingup() {
+    fun testIssueWithSignup() {
         // Given
         val phoneNumber = "01012341234"
         val type = AuthCodeType.SIGN_UP
@@ -98,8 +100,10 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
         reflectionMethod!!.isAccessible = true
 
         val mockMessage = SMSMessageDto(phoneNumber, "subject", "this is sms message")
+        val codeTTL = 1
 
         every { authCodeDomainService.issue(phoneNumber, type) } returns mockAuthCode
+        every { authCodeDomainService getProperty "authCodeTTL" } returns codeTTL
         every {
             smsMessageFactory.get(
                 SMSMessageType.SIGN_UP_REQUEST_AUTH_CODE,
@@ -109,11 +113,12 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
         } returns mockMessage
 
         // When
-        reflectionMethod.call(this.authCodeService, phoneNumber, type)
+        val result = reflectionMethod.call(this.authCodeService, phoneNumber, type) as TokenIssuedResponse
 
         // Then
         verify(exactly = 1) { smsMessageFactory.get(any(), any(), any()) }
         verify { smsClient.sendMessage(mockMessage) }
+        Assertions.assertSame(codeTTL * 60, result.expiredIn)
     }
 
     @Test
@@ -127,8 +132,10 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
         reflectionMethod!!.isAccessible = true
 
         val mockMessage = SMSMessageDto(phoneNumber, "subject", "this is sms message")
+        val codeTTL = 1
 
         every { authCodeDomainService.issue(phoneNumber, type) } returns mockAuthCode
+        every { authCodeDomainService getProperty "authCodeTTL" } returns codeTTL
         every {
             smsMessageFactory.get(
                 SMSMessageType.PASSWORD_RESET_REQUEST_AUTH_CODE,
@@ -138,11 +145,12 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
         } returns mockMessage
 
         // When
-        reflectionMethod.call(this.authCodeService, phoneNumber, type)
+        val result = reflectionMethod.call(this.authCodeService, phoneNumber, type) as TokenIssuedResponse
 
         // Then
         verify(exactly = 1) { smsMessageFactory.get(any(), any(), any()) }
         verify { smsClient.sendMessage(mockMessage) }
+        Assertions.assertSame(codeTTL * 60, result.expiredIn)
     }
 
     @Test
