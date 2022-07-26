@@ -34,6 +34,11 @@ class User(
         return password
     }
 
+    fun setPassword(password: String): User {
+        this.password = password
+        return this
+    }
+
     override fun getUsername(): String {
         return email
     }

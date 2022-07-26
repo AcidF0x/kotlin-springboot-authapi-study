@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class UserDomainService(
@@ -32,10 +33,6 @@ class UserDomainService(
         return userRepository.save(user)
     }
 
-    fun existsByPhoneNumber(phoneNumber: String) = userRepository.existsByPhoneNumber(phoneNumber)
-    fun existsByEmailAndPhoneNumber(phoneNumber: String, email: String) =
-        userRepository.existsByEmailAndPhoneNumber(phoneNumber, email)
-
     fun findByEmailAndPassword(email: String, password: String): User? {
         val user = userRepository.findByEmail(email)
 
@@ -46,6 +43,17 @@ class UserDomainService(
         return user
     }
 
+    fun changePassword(user: User, password: String) {
+        user.password = passwordEncoder.encode(password)
+        user.passwordChangedAt = LocalDateTime.now()
+        this.userRepository.save(user)
+    }
+
+    fun existsByPhoneNumber(phoneNumber: String) = userRepository.existsByPhoneNumber(phoneNumber)
+    fun existsByEmailAndPhoneNumber(phoneNumber: String, email: String) =
+        userRepository.existsByEmailAndPhoneNumber(phoneNumber, email)
     fun findByEmail(email: String) = userRepository.findByEmail(email)
+    fun findByEmailAndPhoneNumber(email: String, phoneNumber: String) =
+        userRepository.findByEmailAndPhoneNumber(email, phoneNumber)
     override fun loadUserByUsername(username: String): UserDetails? = findByEmail(username)
 }

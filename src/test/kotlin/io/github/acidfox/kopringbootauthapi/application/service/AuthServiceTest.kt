@@ -2,6 +2,7 @@ package io.github.acidfox.kopringbootauthapi.application.service
 
 import io.github.acidfox.kopringbootauthapi.BaseTestCase
 import io.github.acidfox.kopringbootauthapi.application.request.LoginRequest
+import io.github.acidfox.kopringbootauthapi.application.request.PasswordChangeRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDomainService
@@ -113,5 +114,51 @@ internal class AuthServiceTest : BaseTestCase() {
             "사용자를 찾을 수 없습니다, 이메일 또는 비밀번호를 확인 해 주세요"
         )
         verify { jwtTokenService wasNot Called }
+    }
+
+    @Test
+    @DisplayName("비밀 번호를 변경 할 수 있다")
+    fun testPasswordChange() {
+        // Given
+        val request = PasswordChangeRequest("email@email.com", "01012341234", "passpass")
+        val mockUser = User(
+            request.email,
+            "nickname",
+            "old_pass",
+            "name",
+            request.phoneNumber
+        )
+
+        every { userDomainService.findByEmailAndPhoneNumber(request.email, request.phoneNumber) } returns mockUser
+        every { authCodeDomainService.verifyValidation(request.phoneNumber, AuthCodeType.RESET_PASSWORD) } returns true
+        every { userDomainService.changePassword(mockUser, request.password) } just runs
+
+        // When
+        authService.passwordChanged(request)
+
+        // Then
+        verify(exactly = 1) {
+            userDomainService.changePassword(mockUser, request.password)
+        }
+    }
+
+    @Test
+    @DisplayName("비밀 번호를 변경 시 사용자를 찾을 수 없다면 Exception을 발생 시킨다")
+    fun testPasswordChangeThrowUserNotFound() {
+        // Given
+        val request = PasswordChangeRequest("email@email.com", "01012341234", "passpass")
+        every { userDomainService.findByEmailAndPhoneNumber(request.email, request.phoneNumber) } returns null
+
+        // When && Then
+        Assertions.assertThrows(
+            UserNotFoundException::class.java,
+            {
+                authService.passwordChanged(request)
+            },
+            "사용자를 찾을 수 없습니다, 이메일 또는 휴대 전화 번호를 확인 해 주세요"
+        )
+
+        verify(exactly = 0) { userDomainService.changePassword(any(), any()) }
+        verify(exactly = 0) { authCodeDomainService.verifyValidation(any(), any()) }
     }
 }

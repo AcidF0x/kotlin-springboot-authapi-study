@@ -1,6 +1,7 @@
 package io.github.acidfox.kopringbootauthapi.application.service
 
 import io.github.acidfox.kopringbootauthapi.application.request.LoginRequest
+import io.github.acidfox.kopringbootauthapi.application.request.PasswordChangeRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
 import io.github.acidfox.kopringbootauthapi.application.response.LoginResponse
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
@@ -34,5 +35,17 @@ class AuthService(
         }
 
         return LoginResponse(jwtTokenService.createJWTToken(user.email, user.passwordChangedAt))
+    }
+
+    @Transactional
+    fun passwordChanged(requestDto: PasswordChangeRequest) {
+        val user = userDomainService.findByEmailAndPhoneNumber(requestDto.email, requestDto.phoneNumber)
+
+        if (user === null) {
+            throw UserNotFoundException("사용자를 찾을 수 없습니다, 이메일 또는 휴대 전화 번호를 확인 해 주세요")
+        }
+
+        authCodeDomainService.verifyValidation(requestDto.phoneNumber, AuthCodeType.RESET_PASSWORD)
+        userDomainService.changePassword(user, requestDto.password)
     }
 }
