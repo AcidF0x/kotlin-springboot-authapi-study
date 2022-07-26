@@ -46,13 +46,13 @@ internal class AuthControllerTest : BaseControllerTestCase() {
         val requestDto = SignUpAuthCodeIssueRequest("01011112222")
         val json = mapper.writeValueAsString(requestDto)
 
-        every { authCodeService.issue(requestDto.phoneNumber, AuthCodeType.SIGN_UP) } just runs
+        every { authCodeService.issueSignupAuthCode(requestDto.phoneNumber) } just runs
 
         // When
         val result = mvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(json))
 
         // Then
-        verify(exactly = 1) { authCodeService.issue(requestDto.phoneNumber, AuthCodeType.SIGN_UP) }
+        verify(exactly = 1) { authCodeService.issueSignupAuthCode(requestDto.phoneNumber) }
         result.andExpect(status().isOk)
     }
 
