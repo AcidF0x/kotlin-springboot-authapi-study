@@ -13,6 +13,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.verify
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
@@ -29,7 +30,8 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
     lateinit var authCodeService: AuthCodeService
 
     @Test
-    fun testIssue() {
+    @DisplayName("회원 가입 인증 코드를 발급 할 수 있다")
+    fun testIssueSignupAuthCode() {
         // Given
         val phoneNumber = "01012341234"
         val authCodeType = AuthCodeType.SIGN_UP
@@ -52,6 +54,38 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
         verify(exactly = 1) {
             smsMessageFactory.get(
                 SMSMessageType.SIGN_UP_REQUEST_AUTH_CODE,
+                phoneNumber,
+                match { it["code"] == mockAuthCode.code && it["ttl"] == mockAuthCodeTTL.toString() }
+            )
+        }
+        verify(exactly = 1) { smsClient.sendMessage(mockMessageDto) }
+    }
+
+    @Test
+    @DisplayName("비밀번호 변경 인증 코드를 발급 할 수 있다")
+    fun testIssuePasswordChangeAuthCode() {
+        // Given
+        val phoneNumber = "01012341234"
+        val authCodeType = AuthCodeType.RESET_PASSWORD
+        val mockAuthCode = AuthCode(phoneNumber, authCodeType, "123123", 3, LocalDateTime.now())
+        val mockMessageDto = SMSMessageDto(phoneNumber, "제목", "내용")
+        val mockAuthCodeTTL = 100
+        every { authCodeDomainService.getProperty("authCodeTTL") } returns mockAuthCodeTTL
+        every { authCodeDomainService.issue(phoneNumber, authCodeType) } returns mockAuthCode
+        every {
+            smsMessageFactory.get(SMSMessageType.PASSWORD_RESET_REQUEST_AUTH_CODE, phoneNumber, any())
+        } returns mockMessageDto
+        every { userDomainService.existsByPhoneNumber(phoneNumber) } returns false
+        every { authCodeDomainService.checkCanIssueAuthCode(false, AuthCodeType.SIGN_UP) } returns true
+
+        // When
+        authCodeService.issue(phoneNumber, authCodeType)
+
+        // Then
+        verify(exactly = 1) { authCodeDomainService.issue(phoneNumber, authCodeType) }
+        verify(exactly = 1) {
+            smsMessageFactory.get(
+                SMSMessageType.PASSWORD_RESET_REQUEST_AUTH_CODE,
                 phoneNumber,
                 match { it["code"] == mockAuthCode.code && it["ttl"] == mockAuthCodeTTL.toString() }
             )

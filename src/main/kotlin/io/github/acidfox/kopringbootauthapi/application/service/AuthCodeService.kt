@@ -25,7 +25,13 @@ class AuthCodeService(
         val messageParams = mapOf(
             Pair("code", authCode.code), Pair("ttl", authCodeDomainService.authCodeTTL.toString())
         )
-        val message = smsMessageFactory.get(SMSMessageType.SIGN_UP_REQUEST_AUTH_CODE, phoneNumber, messageParams)
+
+        val messageType = when (authCodeType) {
+            AuthCodeType.SIGN_UP -> SMSMessageType.SIGN_UP_REQUEST_AUTH_CODE
+            AuthCodeType.RESET_PASSWORD -> SMSMessageType.PASSWORD_RESET_REQUEST_AUTH_CODE
+        }
+
+        val message = smsMessageFactory.get(messageType, phoneNumber, messageParams)
         smsClient.sendMessage(message)
     }
 
