@@ -7,11 +7,11 @@ import io.github.acidfox.kopringbootauthapi.application.request.PasswordResetAut
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpAuthCodeIssueRequest
 import io.github.acidfox.kopringbootauthapi.application.request.SignUpRequest
 import io.github.acidfox.kopringbootauthapi.application.response.LoginResponse
+import io.github.acidfox.kopringbootauthapi.application.response.OkResponse
 import io.github.acidfox.kopringbootauthapi.application.service.AuthCodeService
 import io.github.acidfox.kopringbootauthapi.application.service.AuthService
 import io.github.acidfox.kopringbootauthapi.domain.authcode.enum.AuthCodeType
 import io.github.acidfox.kopringbootauthapi.userinterface.aop.NotLoginOnly
-import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -26,38 +26,38 @@ class AuthController(
 ) {
     @PostMapping("/auth-code/signup")
     @NotLoginOnly
-    fun issueSignUpAuthCode(@RequestBody @Validated request: SignUpAuthCodeIssueRequest): String {
+    fun issueSignUpAuthCode(@RequestBody @Validated request: SignUpAuthCodeIssueRequest): OkResponse {
         // TODO : 발급 시간과 유효 기간 리턴 해주도록 변경
         authCodeService.issueSignupAuthCode(request.phoneNumber)
-        return ResponseEntity.ok().body("").toString()
+        return OkResponse()
     }
 
     @PostMapping("/auth-code/signup/validate")
     @NotLoginOnly
-    fun validateSignupAuthCode(@RequestBody @Validated request: AuthCodeValidateRequest): String {
+    fun validateSignupAuthCode(@RequestBody @Validated request: AuthCodeValidateRequest): OkResponse {
         authCodeService.validate(request.phoneNumber, AuthCodeType.SIGN_UP, request.code)
-        return ResponseEntity.ok().body("").toString()
+        return OkResponse()
     }
 
     @PostMapping("/auth-code/password-reset")
     @NotLoginOnly
-    fun issuePasswordResetAuthCode(@RequestBody @Validated request: PasswordResetAuthCodeIssueRequest): String {
+    fun issuePasswordResetAuthCode(@RequestBody @Validated request: PasswordResetAuthCodeIssueRequest): OkResponse {
         authCodeService.issuePasswordResetAuthCode(request.phoneNumber, request.email)
-        return ResponseEntity.ok().body("").toString()
+        return OkResponse()
     }
 
     @PostMapping("/auth-code/password-reset/validate")
     @NotLoginOnly
-    fun validatePasswordResetAuthCode(@RequestBody @Validated request: AuthCodeValidateRequest): String {
+    fun validatePasswordResetAuthCode(@RequestBody @Validated request: AuthCodeValidateRequest): OkResponse {
         authCodeService.validate(request.phoneNumber, AuthCodeType.RESET_PASSWORD, request.code)
-        return ResponseEntity.ok().body("").toString()
+        return OkResponse()
     }
 
     @PostMapping("/signup")
     @NotLoginOnly
-    fun signUp(@RequestBody @Validated request: SignUpRequest): String {
+    fun signUp(@RequestBody @Validated request: SignUpRequest): OkResponse {
         authService.signUp(request)
-        return ResponseEntity.ok().body("").toString()
+        return OkResponse()
     }
 
     @PostMapping("/login")
@@ -68,8 +68,8 @@ class AuthController(
 
     @PostMapping("/password-reset")
     @NotLoginOnly
-    fun passwordChange(@RequestBody @Validated request: PasswordChangeRequest): String {
+    fun passwordChange(@RequestBody @Validated request: PasswordChangeRequest): OkResponse {
         authService.passwordChanged(request)
-        return ResponseEntity.ok().body("").toString()
+        return OkResponse()
     }
 }
