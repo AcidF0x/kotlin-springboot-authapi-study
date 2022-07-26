@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface UserRepository : JpaRepository<User, Long> {
     fun existsByEmailOrPhoneNumber(email: String, phoneNumber: String): Boolean
+    fun existsByEmailAndPhoneNumber(email: String, phoneNumber: String): Boolean
     fun existsByPhoneNumber(phoneNumber: String): Boolean
     fun findByEmail(email: String): User?
 }

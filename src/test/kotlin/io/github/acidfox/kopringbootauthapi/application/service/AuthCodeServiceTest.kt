@@ -7,12 +7,14 @@ import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDoma
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.dto.SMSMessageDto
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.enum.SMSMessageType
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.factory.SMSMessageFactory
+import io.github.acidfox.kopringbootauthapi.domain.user.exception.UserNotFoundException
 import io.github.acidfox.kopringbootauthapi.domain.user.service.UserDomainService
 import io.github.acidfox.kopringbootauthapi.infrastructure.external.sms.SMSClient
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
@@ -31,7 +33,7 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
 
     @Test
     @DisplayName("회원 가입 인증 코드를 발급 할 수 있다")
-    fun testIssueSignupAuthCode() {
+    fun testIssueSignupAuthCodeType() {
         // Given
         val phoneNumber = "01012341234"
         val authCodeType = AuthCodeType.SIGN_UP
@@ -63,7 +65,7 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
 
     @Test
     @DisplayName("비밀번호 변경 인증 코드를 발급 할 수 있다")
-    fun testIssuePasswordChangeAuthCode() {
+    fun testIssuePasswordChangeAuthCodeType() {
         // Given
         val phoneNumber = "01012341234"
         val authCodeType = AuthCodeType.RESET_PASSWORD
@@ -91,6 +93,25 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
             )
         }
         verify(exactly = 1) { smsClient.sendMessage(mockMessageDto) }
+    }
+
+    @Test
+    @DisplayName("비밀번호 변경 인증 코드를 발급 시 사용자 정보를 찾을 수 없으면 exception을 발생 시킨다")
+    fun testIssuePasswordChangeAuthCode() {
+        // Given
+        val phoneNumber = "01012341234"
+        val email = "test@test.com"
+
+        every { userDomainService.existsByEmailAndPhoneNumber(phoneNumber, email) } returns false
+
+        // When && Then
+        Assertions.assertThrows(
+            UserNotFoundException::class.java,
+            {
+                authCodeService.issuePasswordResetAuthCode(phoneNumber, email)
+            },
+            "사용자 정보를 찾을 수 없습니다, 휴대전화 번호 또는 이메일을 확인해주세요"
+        )
     }
 
     @Test
