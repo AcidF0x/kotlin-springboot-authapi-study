@@ -397,7 +397,7 @@ internal class AuthControllerTest : BaseControllerTestCase() {
     @DisplayName("비밀번호를 변경 할 수 있다")
     fun testPasswordChange() {
         // Given
-        val url = "/api/auth/reset-password"
+        val url = "/api/auth/password-reset"
 
         val requestDto = PasswordChangeRequest(
             "test@mail.com",
@@ -421,7 +421,7 @@ internal class AuthControllerTest : BaseControllerTestCase() {
     @DisplayName("입력값이 정상적이지 않으면 비밀번호를 변경 할 수 없다")
     fun testPasswordChangeWhenInvalidParams() {
 
-        val url = "/api/auth/reset-password"
+        val url = "/api/auth/password-reset"
 
         val requestDto = PasswordChangeRequest(
             "test@mail.com",
