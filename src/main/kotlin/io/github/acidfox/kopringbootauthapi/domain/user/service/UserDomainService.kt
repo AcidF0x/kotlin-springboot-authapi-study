@@ -33,6 +33,8 @@ class UserDomainService(
     }
 
     fun existsByPhoneNumber(phoneNumber: String) = userRepository.existsByPhoneNumber(phoneNumber)
+    fun existsByEmailAndPhoneNumber(phoneNumber: String, email: String) =
+        userRepository.existsByEmailAndPhoneNumber(phoneNumber, email)
 
     fun findByEmailAndPassword(email: String, password: String): User? {
         val user = userRepository.findByEmail(email)
