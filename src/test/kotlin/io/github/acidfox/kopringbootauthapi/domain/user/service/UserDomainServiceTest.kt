@@ -9,11 +9,14 @@ import io.mockk.called
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
+import io.mockk.mockkStatic
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.security.crypto.password.PasswordEncoder
+import java.time.LocalDateTime
 
 internal class UserDomainServiceTest : BaseTestCase() {
     @MockK
@@ -24,6 +27,14 @@ internal class UserDomainServiceTest : BaseTestCase() {
 
     @InjectMockKs
     lateinit var userDomainService: UserDomainService
+
+    private val now: LocalDateTime = LocalDateTime.of(2022, 7, 23, 23, 30, 5)
+
+    @BeforeEach
+    fun setup() {
+        mockkStatic(LocalDateTime::class)
+        every { LocalDateTime.now() } returns now
+    }
 
     @Test
     @DisplayName("회원 가입 할 수 있다")
@@ -213,5 +224,33 @@ internal class UserDomainServiceTest : BaseTestCase() {
 
         // Then
         verify(exactly = 1) { userRepository.findByEmail(email) }
+    }
+
+    @Test
+    @DisplayName("비밀번호를 변경시 암호화 하여 저장하고 비밀번호 변경 시간을 저장한다")
+    fun testChangePassword()
+    {
+        // Given
+        val newPassword = "wow"
+        val encodedPassword = "this_is_secret"
+        val mockUser = User(
+            "email@email.com",
+            "nickname",
+            "password",
+            "name",
+            "01011112222"
+        )
+        mockUser.passwordChangedAt = now.minusDays(300)
+
+        every { passwordEncoder.encode(newPassword) } returns encodedPassword
+        every { userRepository.save(mockUser) } returns mockUser
+
+        // When
+        this.userDomainService.changePassword(mockUser, newPassword)
+
+        // Then
+        verify(exactly = 1) {
+            userRepository.save(match { it.passwordChangedAt == now && it.password == encodedPassword })
+        }
     }
 }
