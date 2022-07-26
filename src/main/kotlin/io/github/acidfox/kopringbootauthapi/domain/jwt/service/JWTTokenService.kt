@@ -2,6 +2,8 @@ package io.github.acidfox.kopringbootauthapi.domain.jwt.service
 
 import io.github.acidfox.kopringbootauthapi.domain.jwt.exception.ExpiredTokenException
 import io.github.acidfox.kopringbootauthapi.domain.jwt.exception.InvalidTokenException
+import io.github.acidfox.kopringbootauthapi.domain.jwt.exception.PasswordChangedTokenException
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -46,19 +48,23 @@ class JWTTokenService(
         return ""
     }
 
-    fun parseEmailFromJWTToken(token: String): String {
-
+    fun parseClaimsFromJWTToken(token: String): Claims {
         try {
-            val claims = Jwts.parser()
+            return Jwts.parser()
                 .setSigningKey(jwtSecretKey)
                 .parseClaimsJws(token)
                 .body
-
-            return claims.subject
         } catch (_: ExpiredJwtException) {
             throw ExpiredTokenException("로그인이 만료되었습니다. 다시 로그인 해주세요")
         } catch (_: Throwable) {
             throw InvalidTokenException("유효하지 않은 로그인 토큰입니다. 다시 로그인 해주세요")
+        }
+    }
+
+    fun validatePasswordChanged(claims: Claims, passwordChangedAt: LocalDateTime?) {
+        val timeStamp = if (passwordChangedAt === null) "" else Timestamp.valueOf(passwordChangedAt).toString()
+        if (claims.id != timeStamp) {
+            throw PasswordChangedTokenException("비밀번호가 변경되었습니다. 다시 로그인 해주세요")
         }
     }
 }

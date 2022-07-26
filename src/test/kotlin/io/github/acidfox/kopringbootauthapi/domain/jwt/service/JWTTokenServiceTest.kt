@@ -1,5 +1,6 @@
 package io.github.acidfox.kopringbootauthapi.domain.jwt.service
 
+import io.github.acidfox.kopringbootauthapi.domain.jwt.exception.PasswordChangedTokenException
 import io.jsonwebtoken.Jwts
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
@@ -63,8 +64,8 @@ internal class JWTTokenServiceTest {
     }
 
     @Test
-    @DisplayName("토큰에서 이메일을 가져 올 수 있다")
-    fun testParseEmailFromJWTToken() {
+    @DisplayName("토큰에서 JWT Claims을 파싱 할 수있다")
+    fun testParseClaimsFromJWTToken() {
         // Given
         val email = "mail@test.com"
         val passwordChangedAt = LocalDateTime.now()
@@ -72,9 +73,43 @@ internal class JWTTokenServiceTest {
         val token = jwtTokenService.createJWTToken(email, passwordChangedAt)
 
         // When
-        val result = jwtTokenService.parseEmailFromJWTToken(token)
+        val result = jwtTokenService.parseClaimsFromJWTToken(token)
 
         // Then
-        Assertions.assertEquals(email, result)
+        Assertions.assertEquals(email, result.subject)
+    }
+
+    @Test
+    @DisplayName("jwt claim으로 비밀번호 변경 여부를 확인 할 수 있다")
+    fun testValidatePasswordChanged() {
+        // Given
+        val email = "mail@test.com"
+        val passwordChangedAt = LocalDateTime.now()
+        val claims = Jwts.claims().setSubject(email).setId(Timestamp.valueOf(passwordChangedAt).toString())
+
+        // When
+        val result = jwtTokenService.validatePasswordChanged(claims, passwordChangedAt)
+
+        // Then
+        Assertions.assertSame(Unit, result)
+    }
+
+    @Test
+    @DisplayName("jwt claim으로 비밀번호 변경 여부를 확인 할 수 있다 - 변경 되었다면 Exception을 발생 시킨다.")
+    fun testValidatePasswordChangedThrowExceptionWhenPasswordChangedAtNotMatched() {
+        // Given
+        val email = "mail@test.com"
+        val passwordChangedAt = LocalDateTime.now()
+        val claims = Jwts.claims().setSubject(email).setId(Timestamp.valueOf(passwordChangedAt).toString())
+
+        // When && Then
+
+        Assertions.assertThrows(
+            PasswordChangedTokenException::class.java,
+            {
+                jwtTokenService.validatePasswordChanged(claims, passwordChangedAt.plusDays(1))
+            },
+            "비밀번호가 변경되었습니다. 다시 로그인 해주세요"
+        )
     }
 }
