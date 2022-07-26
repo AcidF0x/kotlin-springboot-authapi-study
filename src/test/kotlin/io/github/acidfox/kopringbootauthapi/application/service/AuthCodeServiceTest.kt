@@ -7,17 +7,18 @@ import io.github.acidfox.kopringbootauthapi.domain.authcode.service.AuthCodeDoma
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.dto.SMSMessageDto
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.enum.SMSMessageType
 import io.github.acidfox.kopringbootauthapi.domain.smsmessage.factory.SMSMessageFactory
-import io.github.acidfox.kopringbootauthapi.domain.user.exception.UserNotFoundException
 import io.github.acidfox.kopringbootauthapi.domain.user.service.UserDomainService
 import io.github.acidfox.kopringbootauthapi.infrastructure.external.sms.SMSClient
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.RelaxedMockK
+import io.mockk.spyk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
+import kotlin.reflect.full.declaredMemberFunctions
+import kotlin.reflect.jvm.isAccessible
 
 internal class AuthCodeServiceTest() : BaseTestCase() {
     @RelaxedMockK
@@ -32,86 +33,116 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
     lateinit var authCodeService: AuthCodeService
 
     @Test
-    @DisplayName("회원 가입 인증 코드를 발급 할 수 있다")
-    fun testIssueSignupAuthCodeType() {
+    @DisplayName("회원 가입 인증 코드 발급 - 인증 코드 검증 로직 확인후 발급 한다")
+    fun issueSignupAuthCode() {
         // Given
         val phoneNumber = "01012341234"
-        val authCodeType = AuthCodeType.SIGN_UP
-        val mockAuthCode = AuthCode(phoneNumber, authCodeType, "123123", 3, LocalDateTime.now())
-        val mockMessageDto = SMSMessageDto(phoneNumber, "제목", "내용")
-        val mockAuthCodeTTL = 100
-        every { authCodeDomainService.getProperty("authCodeTTL") } returns mockAuthCodeTTL
-        every { authCodeDomainService.issue(phoneNumber, authCodeType) } returns mockAuthCode
-        every {
-            smsMessageFactory.get(SMSMessageType.SIGN_UP_REQUEST_AUTH_CODE, phoneNumber, any())
-        } returns mockMessageDto
+        val spyAuthCodeService = spyk(
+            AuthCodeService(userDomainService, authCodeDomainService, smsMessageFactory, smsClient),
+            recordPrivateCalls = true
+        )
+
+        every { spyAuthCodeService.issueSignupAuthCode(phoneNumber) } answers { callOriginal() }
         every { userDomainService.existsByPhoneNumber(phoneNumber) } returns false
         every { authCodeDomainService.checkCanIssueAuthCode(false, AuthCodeType.SIGN_UP) } returns true
 
         // When
-        authCodeService.issue(phoneNumber, authCodeType)
+        spyAuthCodeService.issueSignupAuthCode(phoneNumber)
 
         // Then
-        verify(exactly = 1) { authCodeDomainService.issue(phoneNumber, authCodeType) }
+        verify(exactly = 1) { userDomainService.existsByPhoneNumber(phoneNumber) }
+        verify(exactly = 1) { authCodeDomainService.checkCanIssueAuthCode(false, AuthCodeType.SIGN_UP) }
         verify(exactly = 1) {
+            spyAuthCodeService invoke "issue" withArguments listOf(phoneNumber, AuthCodeType.SIGN_UP)
+        }
+    }
+
+    @Test
+    @DisplayName("비밀 번호 변경 인증 코드 발급 - 인증 코드 검증 로직 확인후 발급 한다")
+    fun issuePasswordResetAuthCode() {
+        // Given
+        val phoneNumber = "01012341234"
+        val email = "test@example.com"
+        val spyAuthCodeService = spyk(
+            AuthCodeService(userDomainService, authCodeDomainService, smsMessageFactory, smsClient),
+            recordPrivateCalls = true
+        )
+
+        every { spyAuthCodeService.issuePasswordResetAuthCode(phoneNumber, email) } answers { callOriginal() }
+        every { userDomainService.existsByEmailAndPhoneNumber(phoneNumber, email) } returns true
+        every {
+            authCodeDomainService.checkCanIssueAuthCode(true, AuthCodeType.RESET_PASSWORD)
+        } returns true
+
+        // When
+        spyAuthCodeService.issuePasswordResetAuthCode(phoneNumber, email)
+
+        // Then
+        verify(exactly = 1) { userDomainService.existsByEmailAndPhoneNumber(phoneNumber, email) }
+        verify(exactly = 1) {
+            authCodeDomainService.checkCanIssueAuthCode(true, AuthCodeType.RESET_PASSWORD)
+        }
+        verify(exactly = 1) {
+            spyAuthCodeService invoke "issue" withArguments listOf(phoneNumber, AuthCodeType.RESET_PASSWORD)
+        }
+    }
+
+    @Test
+    @DisplayName("인증 코드 발급 로직 - 회원가입 인증 코드를 생성후 SMS 메세지를 발송 한다")
+    fun testIssueWithSingup() {
+        // Given
+        val phoneNumber = "01012341234"
+        val type = AuthCodeType.SIGN_UP
+        val mockAuthCode = AuthCode(phoneNumber, type, "123", 1, LocalDateTime.now())
+        val reflectionMethod = AuthCodeService::class.declaredMemberFunctions.find { it.name == "issue" }
+        reflectionMethod!!.isAccessible = true
+
+        val mockMessage = SMSMessageDto(phoneNumber, "subject", "this is sms message")
+
+        every { authCodeDomainService.issue(phoneNumber, type) } returns mockAuthCode
+        every {
             smsMessageFactory.get(
                 SMSMessageType.SIGN_UP_REQUEST_AUTH_CODE,
                 phoneNumber,
-                match { it["code"] == mockAuthCode.code && it["ttl"] == mockAuthCodeTTL.toString() }
+                match { it["code"] == mockAuthCode.code && it["ttl"] == authCodeDomainService.authCodeTTL.toString() }
             )
-        }
-        verify(exactly = 1) { smsClient.sendMessage(mockMessageDto) }
+        } returns mockMessage
+
+        // When
+        reflectionMethod.call(this.authCodeService, phoneNumber, type)
+
+        // Then
+        verify(exactly = 1) { smsMessageFactory.get(any(), any(), any()) }
+        verify { smsClient.sendMessage(mockMessage) }
     }
 
     @Test
-    @DisplayName("비밀번호 변경 인증 코드를 발급 할 수 있다")
-    fun testIssuePasswordChangeAuthCodeType() {
+    @DisplayName("인증 코드 발급 로직 - 비밀번호 초기화 인증 코드를 생성후 SMS 메세지를 발송 한다")
+    fun testIssueWitPasswordReset() {
         // Given
         val phoneNumber = "01012341234"
-        val authCodeType = AuthCodeType.RESET_PASSWORD
-        val mockAuthCode = AuthCode(phoneNumber, authCodeType, "123123", 3, LocalDateTime.now())
-        val mockMessageDto = SMSMessageDto(phoneNumber, "제목", "내용")
-        val mockAuthCodeTTL = 100
-        every { authCodeDomainService.getProperty("authCodeTTL") } returns mockAuthCodeTTL
-        every { authCodeDomainService.issue(phoneNumber, authCodeType) } returns mockAuthCode
+        val type = AuthCodeType.RESET_PASSWORD
+        val mockAuthCode = AuthCode(phoneNumber, type, "123", 1, LocalDateTime.now())
+        val reflectionMethod = AuthCodeService::class.declaredMemberFunctions.find { it.name == "issue" }
+        reflectionMethod!!.isAccessible = true
+
+        val mockMessage = SMSMessageDto(phoneNumber, "subject", "this is sms message")
+
+        every { authCodeDomainService.issue(phoneNumber, type) } returns mockAuthCode
         every {
-            smsMessageFactory.get(SMSMessageType.PASSWORD_RESET_REQUEST_AUTH_CODE, phoneNumber, any())
-        } returns mockMessageDto
-        every { userDomainService.existsByPhoneNumber(phoneNumber) } returns false
-        every { authCodeDomainService.checkCanIssueAuthCode(false, AuthCodeType.SIGN_UP) } returns true
-
-        // When
-        authCodeService.issue(phoneNumber, authCodeType)
-
-        // Then
-        verify(exactly = 1) { authCodeDomainService.issue(phoneNumber, authCodeType) }
-        verify(exactly = 1) {
             smsMessageFactory.get(
                 SMSMessageType.PASSWORD_RESET_REQUEST_AUTH_CODE,
                 phoneNumber,
-                match { it["code"] == mockAuthCode.code && it["ttl"] == mockAuthCodeTTL.toString() }
+                match { it["code"] == mockAuthCode.code && it["ttl"] == authCodeDomainService.authCodeTTL.toString() }
             )
-        }
-        verify(exactly = 1) { smsClient.sendMessage(mockMessageDto) }
-    }
+        } returns mockMessage
 
-    @Test
-    @DisplayName("비밀번호 변경 인증 코드를 발급 시 사용자 정보를 찾을 수 없으면 exception을 발생 시킨다")
-    fun testIssuePasswordChangeAuthCode() {
-        // Given
-        val phoneNumber = "01012341234"
-        val email = "test@test.com"
+        // When
+        reflectionMethod.call(this.authCodeService, phoneNumber, type)
 
-        every { userDomainService.existsByEmailAndPhoneNumber(phoneNumber, email) } returns false
-
-        // When && Then
-        Assertions.assertThrows(
-            UserNotFoundException::class.java,
-            {
-                authCodeService.issuePasswordResetAuthCode(phoneNumber, email)
-            },
-            "사용자 정보를 찾을 수 없습니다, 휴대전화 번호 또는 이메일을 확인해주세요"
-        )
+        // Then
+        verify(exactly = 1) { smsMessageFactory.get(any(), any(), any()) }
+        verify { smsClient.sendMessage(mockMessage) }
     }
 
     @Test
