@@ -159,11 +159,14 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
         val phoneNumber = "01012341234"
         val authCodeType = AuthCodeType.SIGN_UP
         val code = "123123"
+        val mockValidateLifeTime = 20
+        every { authCodeDomainService getProperty "authCodeValidatedLifeTime" } returns mockValidateLifeTime
 
         // When
-        authCodeService.validate(phoneNumber, authCodeType, code)
+        val result = authCodeService.validate(phoneNumber, authCodeType, code)
 
         // Then
         verify(exactly = 1) { authCodeDomainService.validate(phoneNumber, authCodeType, code) }
+        Assertions.assertEquals(mockValidateLifeTime * 60, result.expiredIn)
     }
 }
