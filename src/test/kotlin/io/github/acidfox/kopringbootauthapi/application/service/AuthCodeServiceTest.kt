@@ -69,7 +69,7 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
         )
 
         every { spyAuthCodeService.issuePasswordResetAuthCode(phoneNumber, email) } answers { callOriginal() }
-        every { userDomainService.existsByEmailAndPhoneNumber(phoneNumber, email) } returns true
+        every { userDomainService.existsByEmailAndPhoneNumber(email, phoneNumber) } returns true
         every {
             authCodeDomainService.checkCanIssueAuthCode(true, AuthCodeType.RESET_PASSWORD)
         } returns true
@@ -78,7 +78,7 @@ internal class AuthCodeServiceTest() : BaseTestCase() {
         spyAuthCodeService.issuePasswordResetAuthCode(phoneNumber, email)
 
         // Then
-        verify(exactly = 1) { userDomainService.existsByEmailAndPhoneNumber(phoneNumber, email) }
+        verify(exactly = 1) { userDomainService.existsByEmailAndPhoneNumber(email, phoneNumber) }
         verify(exactly = 1) {
             authCodeDomainService.checkCanIssueAuthCode(true, AuthCodeType.RESET_PASSWORD)
         }

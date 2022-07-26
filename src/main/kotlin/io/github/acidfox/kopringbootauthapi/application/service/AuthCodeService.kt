@@ -25,7 +25,7 @@ class AuthCodeService(
 
     @Transactional
     fun issuePasswordResetAuthCode(phoneNumber: String, email: String) {
-        val isUserExists = userDomainService.existsByEmailAndPhoneNumber(phoneNumber, email)
+        val isUserExists = userDomainService.existsByEmailAndPhoneNumber(email, phoneNumber)
         authCodeDomainService.checkCanIssueAuthCode(isUserExists, AuthCodeType.RESET_PASSWORD)
         issue(phoneNumber, AuthCodeType.RESET_PASSWORD)
     }
