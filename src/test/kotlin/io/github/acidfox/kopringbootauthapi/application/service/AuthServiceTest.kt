@@ -75,8 +75,16 @@ internal class AuthServiceTest : BaseTestCase() {
 
         val mockJWTToken = "this is jwtToken...."
 
-        every { userDomainService.existsByEmailAndPassword(request.email, request.password) } returns true
-        every { jwtTokenService.createJWTToken(request.email) } returns mockJWTToken
+        val mockUser = User(
+            request.email,
+            "nickname",
+            request.password,
+            "name",
+            "01011112222"
+        )
+
+        every { userDomainService.findByEmailAndPassword(request.email, request.password) } returns mockUser
+        every { jwtTokenService.createJWTToken(request.email, mockUser.passwordChangedAt) } returns mockJWTToken
 
         // When
         val response = authService.login(request)
@@ -94,7 +102,7 @@ internal class AuthServiceTest : BaseTestCase() {
             "1234567890abcdefghijklmnopqr",
         )
 
-        every { userDomainService.existsByEmailAndPassword(request.email, request.password) } returns false
+        every { userDomainService.findByEmailAndPassword(request.email, request.password) } returns null
 
         // When && Then
         Assertions.assertThrows(

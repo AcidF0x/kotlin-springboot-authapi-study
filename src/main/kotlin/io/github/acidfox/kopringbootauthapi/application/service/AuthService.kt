@@ -27,12 +27,12 @@ class AuthService(
 
     @Transactional
     fun login(requestDto: LoginRequest): LoginResponse {
-        val isUserExists = userDomainService.existsByEmailAndPassword(requestDto.email, requestDto.password)
+        val user = userDomainService.findByEmailAndPassword(requestDto.email, requestDto.password)
 
-        if (!isUserExists) {
+        if (user === null) {
             throw UserNotFoundException("사용자를 찾을 수 없습니다, 이메일 또는 비밀번호를 확인 해 주세요")
         }
 
-        return LoginResponse(jwtTokenService.createJWTToken(requestDto.email))
+        return LoginResponse(jwtTokenService.createJWTToken(user.email, user.passwordChangedAt))
     }
 }

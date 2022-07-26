@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
+import java.sql.Timestamp
+import java.time.LocalDateTime
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -19,9 +21,10 @@ internal class JWTTokenServiceTest {
     fun testCreateJWTToken() {
         // Given
         val email = "mail@test.com"
+        val passwordChangedAt = LocalDateTime.now()
 
         // When
-        val result = jwtTokenService.createJWTToken(email)
+        val result = jwtTokenService.createJWTToken(email, passwordChangedAt)
 
         // Then
         val token = Jwts.parser()
@@ -30,6 +33,7 @@ internal class JWTTokenServiceTest {
             .body
 
         Assertions.assertEquals(email, token.subject)
+        Assertions.assertEquals(Timestamp.valueOf(passwordChangedAt).toString(), token.id)
     }
 
     @Test
@@ -63,7 +67,9 @@ internal class JWTTokenServiceTest {
     fun testParseEmailFromJWTToken() {
         // Given
         val email = "mail@test.com"
-        val token = jwtTokenService.createJWTToken(email)
+        val passwordChangedAt = LocalDateTime.now()
+
+        val token = jwtTokenService.createJWTToken(email, passwordChangedAt)
 
         // When
         val result = jwtTokenService.parseEmailFromJWTToken(token)
